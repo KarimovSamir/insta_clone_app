@@ -1,4 +1,5 @@
 import { body } from 'express-validator';
+import { db } from '../../db/in-memory.db';
 
 const titleValidation = body('title')
     .exists()
@@ -70,7 +71,14 @@ const blogId = body('blogId')
     .bail()
 
     .matches(/^\d+$/)
-    .withMessage('blogId must contain only digits');
+    .withMessage('blogId must contain only digits')
+    .bail()
+    
+    .custom((value) => {
+    const exists = db.blogs.some(b => b.id === value);
+    if (!exists) throw new Error('blogId does not exist');
+        return true;
+    });
 
 
 export const postInputDtoValidation = [
