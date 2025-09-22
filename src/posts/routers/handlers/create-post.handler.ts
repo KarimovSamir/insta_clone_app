@@ -1,7 +1,5 @@
 import { Request, Response } from 'express'
 import { HttpStatus } from '../../../core/types/http-statuses';
-import { CreateErrorMessages } from '../../../core/utils/error.utils';
-// import { postValidation } from '../../validation/post.validation';
 import { db } from '../../../db/in-memory.db';
 import { Post } from '../../types/post';
 import { postsRepository } from '../../repositories/post.repository';
@@ -22,6 +20,7 @@ export function createPostHandler(
         };
     }
     const nextId = String(lastNum + 1);
+    const blogNameById = db.blogs.find(b => b.id === req.body.blogId.trim())!.name;
 
     const newPost: Post = {
         id: nextId.trim(),
@@ -29,7 +28,7 @@ export function createPostHandler(
         shortDescription: req.body.shortDescription.trim(),
         content: req.body.content.trim(),
         blogId: req.body.blogId.trim(),
-        blogName: req.body.blogName.trim()
+        blogName: blogNameById
     };
 
     postsRepository.createPost(newPost);
