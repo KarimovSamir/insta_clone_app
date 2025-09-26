@@ -20,7 +20,7 @@ export async function deleteBlogHandler(req: Request, res: Response){
         await blogsRepository.deleteBlogById(id);
         res.sendStatus(HttpStatus.NoContent);
     } catch (e: unknown) {
-        res.sendStatus(HttpStatus.InternalServerError);
+        res.sendStatus(HttpStatus.NotFound);
     }
 }
 

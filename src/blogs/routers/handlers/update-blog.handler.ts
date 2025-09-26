@@ -24,6 +24,6 @@ export async function updateBlogByIdHandler(
         await blogsRepository.updateBlogById(id, req.body);
         res.sendStatus(HttpStatus.NoContent);
     } catch (e: unknown) {
-        res.sendStatus(HttpStatus.InternalServerError);
+        res.sendStatus(HttpStatus.NotFound);
     }
 }

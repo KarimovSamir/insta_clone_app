@@ -22,6 +22,6 @@ export async function getBlogByIdHandler(req: Request, res: Response){
         const blogViewModel = mapToBlogViewModel(blog);
         res.status(HttpStatus.Ok).send(blogViewModel);
     } catch (e: unknown) {
-        res.sendStatus(HttpStatus.InternalServerError);
+        res.sendStatus(HttpStatus.NotFound);
     }
 }
