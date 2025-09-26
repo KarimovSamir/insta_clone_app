@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import express from "express";
 import { setupApp } from "./setup-app";
 import { SETTINGS } from './core/settings/settings';
