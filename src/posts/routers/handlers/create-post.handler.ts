@@ -27,7 +27,7 @@ export async function createPostHandler(
         const PostViewModel = mapToPostViewModel(createdPost)
         res.status(HttpStatus.Created).send(PostViewModel);      
     } catch (e: unknown) {
-        res.sendStatus(HttpStatus.NotFound);  
+        res.sendStatus(HttpStatus.InternalServerError);  
     }
 }
 
