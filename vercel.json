@@ -2,16 +2,15 @@
   "version": 2,
   "name": "2_lesson",
   "builds": [
-    { "src": "src/index.ts", "use": "@vercel/node" }
+    {
+      "src": "src/index.ts",
+      "use": "@vercel/node"
+    }
   ],
   "routes": [
-    { "src": "/(.*)", "dest": "src/index.ts" }
-  ],
-  "functions": {
-    "src/index.ts": {
-      "runtime": "nodejs20.x"
+    {
+      "src": "/(.*)",
+      "dest": "src/index.ts"
     }
-  },
-  "installCommand": "pnpm install",
-  "buildCommand": "pnpm tsc"
+  ]
 }
