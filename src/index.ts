@@ -11,9 +11,6 @@ const bootstrap = async () => {
 
   await runDB(SETTINGS.MONGO_URL);
 
-  // app.listen(PORT, () => {
-  //   console.log(`Example app listening on port ${PORT}`);
-  // });
   return app;
 };
 

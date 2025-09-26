@@ -8,9 +8,9 @@ export const setupApp = async (app: Express) => {
     app.use(express.json()); // middleware для парсинга JSON в теле запроса
 
     // основной роут
-    // app.get("/", (req, res) => {
-    //     res.status(200).send("Instagram clone app");
-    // });
+    app.get("/", (req, res) => {
+        res.status(200).send("Instagram clone app");
+    });
 
     app.use(BLOGS_PATH, blogRouter);
     app.use(POSTS_PATH, postRouter);
