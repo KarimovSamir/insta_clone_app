@@ -22,6 +22,6 @@ export async function getPostByIdHandler(req: Request, res: Response){
         const postViewModel = mapToPostViewModel(post);
         res.status(HttpStatus.Ok).send(postViewModel);
     } catch (e: unknown) {
-        res.sendStatus(HttpStatus.InternalServerError);
+        res.sendStatus(HttpStatus.NotFound);
     }
 }

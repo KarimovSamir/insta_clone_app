@@ -20,7 +20,7 @@ export async function deletePostHandler(req: Request, res: Response){
         await postsRepository.deletePostById(id);
         res.sendStatus(HttpStatus.NoContent);
     } catch (e: unknown) {
-        res.sendStatus(HttpStatus.InternalServerError);
+        res.sendStatus(HttpStatus.NotFound);
     }
 }
 
