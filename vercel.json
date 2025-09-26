@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "name": "insta_clone_app",
   "builds": [
     { "src": "src/index.ts", "use": "@vercel/node" }
   ],
@@ -10,7 +11,5 @@
     "src/index.ts": {
       "runtime": "nodejs20.x"
     }
-  },
-  "installCommand": "pnpm install",
-  "buildCommand": "pnpm tsc"
+  }
 }
