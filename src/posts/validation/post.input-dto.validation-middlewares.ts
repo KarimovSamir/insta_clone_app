@@ -1,5 +1,5 @@
 import { body } from 'express-validator';
-import { db } from '../../db/in-memory.db';
+import { blogsRepository } from '../../blogs/repositories/blog.repository';
 
 const titleValidation = body('title')
     .exists()
@@ -69,14 +69,12 @@ const blogId = body('blogId')
     .notEmpty()
     .withMessage('blogId must not be empty')
     .bail()
-
-    .matches(/^\d+$/)
-    .withMessage('blogId must contain only digits')
-    .bail()
     
-    .custom((value) => {
-    const exists = db.blogs.some(b => b.id === value);
-    if (!exists) throw new Error('blogId does not exist');
+    .custom(async (value, { req }) => {
+        const blogId = await blogsRepository.findBlogById(value);
+        if (!blogId) {
+            throw new Error('blogId does not exist');
+        }
         return true;
     });
 

@@ -3,5 +3,4 @@ export type PostInputDto = {
     shortDescription: string;
     content: string;
     blogId: string;
-    blogName: string;
 };

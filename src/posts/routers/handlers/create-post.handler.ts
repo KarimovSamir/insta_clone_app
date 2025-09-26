@@ -1,38 +1,33 @@
 import { Request, Response } from 'express'
 import { HttpStatus } from '../../../core/types/http-statuses';
-import { db } from '../../../db/in-memory.db';
 import { Post } from '../../types/post';
 import { postsRepository } from '../../repositories/post.repository';
 import { PostInputDto } from '../../dto/post.input-dto';
+import { mapToPostViewModel } from '../mappers/map-to-post-view-model.util';
+import { blogsRepository } from '../../../blogs/repositories/blog.repository';
 
-export function createPostHandler(
+export async function createPostHandler(
     // PostInputDto нужен, чтобы строго ловить именно эти поля. 
     // Если передать ещё какое то лишнее поле, то ошибка
     req: Request<{}, {}, PostInputDto>, 
     res: Response
 ){
-    let lastNum = 0;
-
-    for (const { id } of db.posts) {
-        const num = +id;
-        if (num > lastNum) {
-            lastNum = num
+    try {
+        const blogNameById = await blogsRepository.findBlogById(req.body.blogId);
+        const newBlog: Post = {
+            title: req.body.title,
+            shortDescription: req.body.shortDescription,
+            content: req.body.content,
+            blogId: req.body.blogId,
+            blogName: blogNameById!.name,
+            createdAt: new Date().toISOString(),
         };
+    
+        const createdPost = await postsRepository.createPost(newBlog);
+        const PostViewModel = mapToPostViewModel(createdPost)
+        res.status(HttpStatus.Created).send(PostViewModel);      
+    } catch (e: unknown) {
+        res.sendStatus(HttpStatus.InternalServerError);  
     }
-    const nextId = String(lastNum + 1);
-    const blogNameById = db.blogs.find(b => b.id === req.body.blogId.trim())!.name;
-
-    const newPost: Post = {
-        id: nextId.trim(),
-        title: req.body.title.trim(),
-        shortDescription: req.body.shortDescription.trim(),
-        content: req.body.content.trim(),
-        blogId: req.body.blogId.trim(),
-        blogName: blogNameById
-    };
-
-    postsRepository.createPost(newPost);
-
-    res.status(HttpStatus.Created).send(newPost);
 }
 

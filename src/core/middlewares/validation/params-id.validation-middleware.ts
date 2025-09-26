@@ -15,5 +15,5 @@ export const idValidation = param('id')
     .withMessage('id must not be empty')
     .bail()
 
-    .matches(/^\d+$/)
-    .withMessage('id must contain only digits');
+    .isMongoId()
+    .withMessage('Incorrect format of ObjectId');
