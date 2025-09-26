@@ -22,13 +22,11 @@ import { SETTINGS } from "./core/settings/settings";
 
 const app = express();
 
-// настройка роутов
 setupApp(app);
 
-// подключение к базе с ленивым клиентом (один раз на холодный старт)
 runDB(SETTINGS.MONGO_URL).catch((err) => {
   console.error("❌ DB connection failed:", err);
 });
 
-// экспортируем app для Vercel
+// Для Vercel нужен именно экспорт приложения
 export default app;

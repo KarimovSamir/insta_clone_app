@@ -37,7 +37,6 @@
 //   await client.close();
 // }
 
-
 import { Collection, Db, MongoClient } from "mongodb";
 import { Blog } from "../blogs/types/blog";
 import { Post } from "../posts/types/post";
@@ -50,27 +49,40 @@ export let client: MongoClient;
 export let blogCollection: Collection<Blog>;
 export let postCollection: Collection<Post>;
 
-// глобальный промис, чтобы не создавать новые соединения на каждый вызов
-let clientPromise: Promise<MongoClient>;
+// Кэшируем подключение между инвокациями функции
+let clientPromise: Promise<MongoClient> | null = null;
 
-export async function runDB(url: string): Promise<void> {
+// Промис «готовности БД», чтобы маршруты могли дождаться инициализации
+export let dbReady: Promise<void> | null = null;
+
+export function runDB(url: string): Promise<void> {
   if (!clientPromise) {
     client = new MongoClient(url);
     clientPromise = client.connect();
   }
 
-  try {
-    client = await clientPromise;
-    const db: Db = client.db(SETTINGS.DB_NAME);
+  // Инициализируем коллекции один раз и сохраняем промис
+  if (!dbReady) {
+    dbReady = (async () => {
+      try {
+        client = await clientPromise!;
+        const db: Db = client.db(SETTINGS.DB_NAME);
 
-    blogCollection = db.collection<Blog>(BLOG_COLLECTION_NAME);
-    postCollection = db.collection<Post>(POST_COLLECTION_NAME);
+        blogCollection = db.collection<Blog>(BLOG_COLLECTION_NAME);
+        postCollection = db.collection<Post>(POST_COLLECTION_NAME);
 
-    console.log("✅ Connected to the database");
-  } catch (e) {
-    console.error("❌ Database not connected:", e);
-    throw e;
+        await db.command({ ping: 1 });
+        console.log("✅ Connected to the database");
+      } catch (e) {
+        console.error("❌ Database not connected:", e);
+        // не оставляем висящее состояние
+        dbReady = null;
+        throw e;
+      }
+    })();
   }
+
+  return dbReady;
 }
 
 export async function stopDb() {
