@@ -1,27 +1,21 @@
-import { Request, Response } from 'express'
-import { blogsRepository } from '../../repositories/blog.repository'
+import { Request, Response } from 'express';
 import { HttpStatus } from '../../../core/types/http-statuses';
-import { CreateErrorMessages } from '../../../core/utils/error.utils';
-import { mapToBlogViewModel } from '../mappers/map-to-blog-view-model.util';
+import { errorsHandler } from '../../../core/errors/errors.handler';
+import { blogsService } from '../../application/blogs.service';
+import { mapToBlogOutput } from '../mappers/map-to-blog-output.util';
 
-export async function getBlogByIdHandler(req: Request, res: Response){
-    try {
-        const id = req.params.id;
-        const blog = await blogsRepository.findBlogById(id);
+export async function getBlogHandler(
+  req: Request<{ id: string }>,
+  res: Response,
+) {
+  try {
+    const id = req.params.id;
 
-        if (!blog) {
-        res
-            .status(HttpStatus.NotFound)
-            .send(
-                CreateErrorMessages([{ field: 'id', message: 'Blog not found' }]),
-            );
+    const blog = await blogsService.findBlogByIdOrFail(id);
+    const blogOutput = mapToBlogOutput(blog);
 
-        return;
-        }
-
-        const blogViewModel = mapToBlogViewModel(blog);
-        res.status(HttpStatus.Ok).send(blogViewModel);
-    } catch (e: unknown) {
-        res.sendStatus(HttpStatus.NotFound);
-    }
+    res.status(HttpStatus.Ok).send(blogOutput);
+  } catch (e: unknown) {
+    errorsHandler(e, res);
+  }
 }

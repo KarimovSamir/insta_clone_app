@@ -1,7 +1,9 @@
 import { body } from 'express-validator';
-import { blogsRepository } from '../../blogs/repositories/blog.repository';
+import { resourceTypeValidation } from '../../core/middlewares/validation/resource-type.validation-middleware';
+import { ResourceType } from '../../core/types/resource-type';
+import { dataIdMatchValidation } from '../../core/middlewares/validation/params-id.validation-middleware';
 
-const titleValidation = body('title')
+const titleValidation = body('data.attributes.title')
     .exists()
     .withMessage('Title is required')
     .bail()
@@ -19,7 +21,7 @@ const titleValidation = body('title')
     .isLength({ min: 2, max: 30 })
     .withMessage('Length of title is not correct');
 
-const shortDescriptionValidation = body('shortDescription')
+const shortDescriptionValidation = body('data.attributes.shortDescription')
     .exists()
     .withMessage('shortDescription is required')
     .bail()
@@ -37,7 +39,7 @@ const shortDescriptionValidation = body('shortDescription')
     .isLength({ min: 2, max: 100 })
     .withMessage('Length of shortDescription is not correct');
 
-const contentValidation = body('content')
+const contentValidation = body('data.attributes.content')
     .exists()
     .withMessage('content is required')
     .bail()
@@ -55,7 +57,7 @@ const contentValidation = body('content')
     .isLength({ min: 2, max: 1000 })
     .withMessage('Length of content is not correct');
 
-const blogId = body('blogId')
+const blogId = body('data.attributes.blogId')
     .exists()
     .withMessage('blogId is required')
     .bail()
@@ -69,19 +71,20 @@ const blogId = body('blogId')
     .notEmpty()
     .withMessage('blogId must not be empty')
     .bail()
-    
-    .custom(async (value, { req }) => {
-        const blogId = await blogsRepository.findBlogById(value);
-        if (!blogId) {
-            throw new Error('blogId does not exist');
-        }
-        return true;
-    });
 
+export const postCreateInputDtoValidation = [
+    resourceTypeValidation(ResourceType.Posts),
+    titleValidation,
+    shortDescriptionValidation,
+    contentValidation,
+    blogId
+];
 
-export const postInputDtoValidation = [
-  titleValidation,
-  shortDescriptionValidation,
-  contentValidation,
-  blogId
+export const postUpdateInputDtoValidation = [
+    resourceTypeValidation(ResourceType.Posts),
+    dataIdMatchValidation,
+    titleValidation,
+    shortDescriptionValidation,
+    contentValidation,
+    blogId
 ];

@@ -1,29 +1,20 @@
 import { Request, Response } from 'express'
-import { postsRepository } from '../../repositories/post.repository'
 import { HttpStatus } from '../../../core/types/http-statuses';
-import { CreateErrorMessages } from '../../../core/utils/error.utils';
-import { PostInputDto } from '../../dto/post.input-dto';
+import { PostUpdateInput } from '../input/post-update.input';
+import { postsService } from '../../application/posts.service';
+import { errorsHandler } from '../../../core/errors/errors.handler';
 
 export async function updatePostByIdHandler(
-    req: Request<{ id: string }, {}, PostInputDto>,
+    req: Request<{ id: string }, {}, PostUpdateInput>,
     res: Response,
 ){
     try {
         const id = req.params.id;
-        const post = postsRepository.findPostById(id);
 
-        if (!post) {
-            res
-            .status(HttpStatus.NotFound)
-            .send(
-                CreateErrorMessages([{ field: 'id', message: 'Post not found' }]),
-            );
-            return;
-        }
+        await postsService.updatePostById(id, req.body.data.attributes);
 
-        await postsRepository.updatePostById(id, req.body);
         res.sendStatus(HttpStatus.NoContent);
     } catch (e: unknown) {
-        res.sendStatus(HttpStatus.NotFound);
+        errorsHandler(e, res);
     }
 }

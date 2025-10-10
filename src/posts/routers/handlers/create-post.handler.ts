@@ -1,33 +1,23 @@
 import { Request, Response } from 'express'
 import { HttpStatus } from '../../../core/types/http-statuses';
-import { Post } from '../../types/post';
-import { postsRepository } from '../../repositories/post.repository';
-import { PostInputDto } from '../../dto/post.input-dto';
-import { mapToPostViewModel } from '../mappers/map-to-post-view-model.util';
-import { blogsRepository } from '../../../blogs/repositories/blog.repository';
+import { postsService } from '../../application/posts.service';
+import { PostCreateInput } from '../input/post-create.input';
+import { mapToPostOutputUtil } from '../mappers/map-to-post-output.util';
+import { errorsHandler } from '../../../core/errors/errors.handler';
 
 export async function createPostHandler(
-    // PostInputDto нужен, чтобы строго ловить именно эти поля. 
+    // PostCreateInput нужен, чтобы строго ловить именно эти поля. 
     // Если передать ещё какое то лишнее поле, то ошибка
-    req: Request<{}, {}, PostInputDto>, 
+    req: Request<{}, {}, PostCreateInput>, 
     res: Response
 ){
     try {
-        const blogNameById = await blogsRepository.findBlogById(req.body.blogId);
-        const newBlog: Post = {
-            title: req.body.title,
-            shortDescription: req.body.shortDescription,
-            content: req.body.content,
-            blogId: req.body.blogId,
-            blogName: blogNameById!.name,
-            createdAt: new Date().toISOString(),
-        };
-    
-        const createdPost = await postsRepository.createPost(newBlog);
-        const PostViewModel = mapToPostViewModel(createdPost)
-        res.status(HttpStatus.Created).send(PostViewModel);      
+        const createdPostId = await postsService.createPost(req.body.data.attributes);
+        const createdPost = await postsService.findPostByIdOrFail(createdPostId);
+        const postOutput = mapToPostOutputUtil(createdPost);
+        res.status(HttpStatus.Created).send(postOutput);     
     } catch (e: unknown) {
-        res.sendStatus(HttpStatus.InternalServerError);  
+        errorsHandler(e, res);
     }
 }
 

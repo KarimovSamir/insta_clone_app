@@ -1,6 +1,9 @@
 import { body } from 'express-validator';
+import { dataIdMatchValidation } from '../../core/middlewares/validation/params-id.validation-middleware';
+import { resourceTypeValidation } from '../../core/middlewares/validation/resource-type.validation-middleware';
+import { ResourceType } from '../../core/types/resource-type';
 
-const nameValidation = body('name')
+const nameValidation = body('data.attributes.name')
     .exists()
     .withMessage('name is required')
     .bail()
@@ -18,7 +21,7 @@ const nameValidation = body('name')
     .isLength({ min: 2, max: 15 })
     .withMessage('Length of name is not correct');
 
-const descriptionValidation = body('description')
+const descriptionValidation = body('data.attributes.description')
     .exists()
     .withMessage('description is required')
     .bail()
@@ -36,7 +39,7 @@ const descriptionValidation = body('description')
     .isLength({ min: 2, max: 500 })
     .withMessage('Length of description is not correct');
 
-const websiteUrlValidation = body('websiteUrl')
+const websiteUrlValidation = body('data.attributes.websiteUrl')
     .exists()
     .withMessage('websiteUrl is required')
     .bail()
@@ -58,7 +61,16 @@ const websiteUrlValidation = body('websiteUrl')
     .isURL()
     .withMessage('Invalid URL format. Ex: https://test.com');
 
-export const blogInputDtoValidation = [
+export const blogCreateInputValidation = [
+  resourceTypeValidation(ResourceType.Blogs),
+  nameValidation,
+  descriptionValidation,
+  websiteUrlValidation
+];
+
+export const blogUpdateInputValidation = [
+  resourceTypeValidation(ResourceType.Blogs),
+  dataIdMatchValidation,
   nameValidation,
   descriptionValidation,
   websiteUrlValidation

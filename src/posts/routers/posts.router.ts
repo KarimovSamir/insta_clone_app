@@ -6,14 +6,48 @@ import { updatePostByIdHandler } from "./handlers/update-post.handler";
 import { deletePostHandler } from "./handlers/delete-post.handler";
 import { idValidation } from '../../core/middlewares/validation/params-id.validation-middleware';
 import { inputValidationResultMiddleware } from "../../core/middlewares/validation/input-validtion-result.middleware";
-import { postInputDtoValidation } from "../validation/post.input-dto.validation-middlewares";
 import { superAdminGuardMiddleware } from '../../auth/middlewares/super-admin.guard-middleware';
+import { paginationAndSortingValidation } from "../../core/middlewares/validation/query-pagination-sorting.validation-middleware";
+import { PostSortField } from "./input/post-sort-field";
+import { postCreateInputDtoValidation, postUpdateInputDtoValidation } from "./post.input-dto.validation-middlewares";
 
-export const postRouter = Router();
+export const postRouter = Router({});
+
+postRouter.use(superAdminGuardMiddleware);
 
 postRouter
-    .get('', getPostListHandler)
-    .get('/:id', idValidation, inputValidationResultMiddleware, getPostByIdHandler)
-    .post('/', superAdminGuardMiddleware, postInputDtoValidation, inputValidationResultMiddleware, createPostHandler)
-    .put('/:id', superAdminGuardMiddleware, idValidation, postInputDtoValidation, inputValidationResultMiddleware, updatePostByIdHandler)
-    .delete('/:id', superAdminGuardMiddleware, idValidation, inputValidationResultMiddleware, deletePostHandler)
+    .get(
+        '', 
+        paginationAndSortingValidation(PostSortField),
+        inputValidationResultMiddleware,
+        getPostListHandler,
+    )
+
+    .get(
+        '/:id', 
+        idValidation, 
+        inputValidationResultMiddleware, 
+        getPostByIdHandler,
+    )
+
+    .post(
+        '', 
+        postCreateInputDtoValidation, 
+        inputValidationResultMiddleware, 
+        createPostHandler,
+    )
+
+    .put(
+        '/:id', 
+        idValidation, 
+        postUpdateInputDtoValidation, 
+        inputValidationResultMiddleware, 
+        updatePostByIdHandler,
+    )
+
+    .delete(
+        '/:id', 
+        idValidation, 
+        inputValidationResultMiddleware, 
+        deletePostHandler,
+    )
