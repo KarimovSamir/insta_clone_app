@@ -14,7 +14,7 @@ export async function getBlogHandler(
     const blog = await blogsService.findBlogByIdOrFail(id);
     const blogOutput = mapToBlogOutput(blog);
 
-    res.status(HttpStatus.Ok).send(blogOutput);
+    res.status(HttpStatus.Ok).send(blog);
   } catch (e: unknown) {
     errorsHandler(e, res);
   }

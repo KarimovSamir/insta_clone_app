@@ -17,6 +17,7 @@ export async function getBlogListHandler(
         }); //утилита для извечения трансформированных значений после валидатара
         //в req.query остаются сырые квери параметры (строки)
         const queryInput = setDefaultSortAndPaginationIfNotExist(sanitizedQuery);
+        const testAnswer = await blogsService.findBlogs(queryInput);
 
         const { items, totalCount } = await blogsService.findBlogs(queryInput);
 
@@ -27,6 +28,8 @@ export async function getBlogListHandler(
         });
 
         res.send(blogsListOutput);
+
+        // res.send(queryInput);
     } catch (e: unknown) {
         errorsHandler(e, res);
     }

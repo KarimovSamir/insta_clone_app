@@ -10,11 +10,11 @@ export const blogsRepository = {
         queryDto: BlogQueryInput,
     ): Promise<{ items: WithId<Blog>[]; totalCount: number }> {
         const {
-        pageNumber,
-        pageSize,
-        sortBy,
-        sortDirection,
-        searchNameTerm,
+            searchNameTerm,
+            sortBy,
+            sortDirection,
+            pageNumber,
+            pageSize,
         } = queryDto;
 
         const skip = (pageNumber - 1) * pageSize;
