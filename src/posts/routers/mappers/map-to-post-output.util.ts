@@ -5,17 +5,12 @@ import { PostOutput } from "../output/post.output";
 
 export function mapToPostOutputUtil (post: WithId<Post>): PostOutput{
     return {
-        data: {
-            type: ResourceType.Posts,
-            id: post._id.toString(),
-            attributes: {
-                title: post.title,
-                shortDescription: post.shortDescription,
-                content: post.content,
-                blogId: post.blogId,
-                blogName: post.blogName,
-                createdAt: post.createdAt,
-            },   
-        },
+        id: post._id.toString(),
+        title: post.title,
+        shortDescription: post.shortDescription,
+        content: post.content,
+        blogId: post.blogId,
+        blogName: post.blogName,
+        createdAt: post.createdAt, 
     };
 }

@@ -12,10 +12,10 @@ export async function createPostHandler(
     res: Response
 ){
     try {
-        const createdPostId = await postsService.createPost(req.body.data.attributes);
+        const createdPostId = await postsService.createPost(req.body);
         const createdPost = await postsService.findPostByIdOrFail(createdPostId);
         const postOutput = mapToPostOutputUtil(createdPost);
-        res.status(HttpStatus.Created).send(postOutput);     
+        res.status(HttpStatus.Created).send(postOutput);
     } catch (e: unknown) {
         errorsHandler(e, res);
     }

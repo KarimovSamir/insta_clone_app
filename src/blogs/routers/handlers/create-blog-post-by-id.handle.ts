@@ -1,17 +1,20 @@
 import { Request, Response } from 'express';
 import { errorsHandler } from '../../../core/errors/errors.handler';
 import { postsService } from '../../../posts/application/posts.service';
-import { PostCreateInput } from '../../../posts/routers/input/post-create.input';
+import { PostCreateByBlogInput } from '../../../posts/routers/input/post-create.input';
 import { mapToPostOutputUtil } from '../../../posts/routers/mappers/map-to-post-output.util';
 import { HttpStatus } from '../../../core/types/http-statuses';
 
 export async function createBlogPostByIdHandler(
-    req: Request<{ id: string }, {}, PostCreateInput>,
+    req: Request<{ id: string }, {}, PostCreateByBlogInput>,
     res: Response,
 ) {
-    try {  
+    try {
         const id = req.params.id;
-        const createdPostId = await postsService.createPostWithUrlBlogId(id, req.body.data.attributes);
+        const createdPostId = await postsService.createPostWithUrlBlogId(id, {
+            ...req.body,
+            blogId: id,
+        });        
         const createdPost = await postsService.findPostByIdOrFail(createdPostId);
         const postOutput = mapToPostOutputUtil(createdPost);
         res.status(HttpStatus.Created).send(postOutput);   
@@ -19,3 +22,5 @@ export async function createBlogPostByIdHandler(
         errorsHandler(e, res);
     }
 }
+
+
