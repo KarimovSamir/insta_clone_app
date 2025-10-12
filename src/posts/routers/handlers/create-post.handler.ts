@@ -6,16 +6,16 @@ import { mapToPostOutputUtil } from '../mappers/map-to-post-output.util';
 import { errorsHandler } from '../../../core/errors/errors.handler';
 
 export async function createPostHandler(
-    // PostCreateInput нужен, чтобы строго ловить именно эти поля. 
+    // PostCreateInput нужен, чтобы строго ловить именно эти поля.
     // Если передать ещё какое то лишнее поле, то ошибка
-    req: Request<{}, {}, PostCreateInput>, 
+    req: Request<{}, {}, PostCreateInput>,
     res: Response
 ){
     try {
-        const createdPostId = await postsService.createPost(req.body.data.attributes);
+        const createdPostId = await postsService.createPost(req.body);
         const createdPost = await postsService.findPostByIdOrFail(createdPostId);
         const postOutput = mapToPostOutputUtil(createdPost);
-        res.status(HttpStatus.Created).send(postOutput);     
+        res.status(HttpStatus.Created).send(postOutput);
     } catch (e: unknown) {
         errorsHandler(e, res);
     }

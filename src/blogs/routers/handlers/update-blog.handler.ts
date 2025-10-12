@@ -11,7 +11,7 @@ export async function updateBlogByIdHandler(
   try {
     const id = req.params.id;
 
-    await blogsService.updateBlogById(id, req.body.data.attributes);
+    await blogsService.updateBlogById(id, req.body);
 
     res.sendStatus(HttpStatus.NoContent);
   } catch (e: unknown) {

@@ -1,9 +1,5 @@
 import { body } from 'express-validator';
-import { resourceTypeValidation } from '../../core/middlewares/validation/resource-type.validation-middleware';
-import { ResourceType } from '../../core/types/resource-type';
-import { dataIdMatchValidation } from '../../core/middlewares/validation/params-id.validation-middleware';
-
-const titleValidation = body('data.attributes.title')
+const titleValidation = body('title')
     .exists()
     .withMessage('Title is required')
     .bail()
@@ -21,7 +17,7 @@ const titleValidation = body('data.attributes.title')
     .isLength({ min: 2, max: 30 })
     .withMessage('Length of title is not correct');
 
-const shortDescriptionValidation = body('data.attributes.shortDescription')
+const shortDescriptionValidation = body('shortDescription')
     .exists()
     .withMessage('shortDescription is required')
     .bail()
@@ -39,7 +35,7 @@ const shortDescriptionValidation = body('data.attributes.shortDescription')
     .isLength({ min: 2, max: 100 })
     .withMessage('Length of shortDescription is not correct');
 
-const contentValidation = body('data.attributes.content')
+const contentValidation = body('content')
     .exists()
     .withMessage('content is required')
     .bail()
@@ -57,7 +53,7 @@ const contentValidation = body('data.attributes.content')
     .isLength({ min: 2, max: 1000 })
     .withMessage('Length of content is not correct');
 
-const blogId = body('data.attributes.blogId')
+const blogId = body('blogId')
     .exists()
     .withMessage('blogId is required')
     .bail()
@@ -73,7 +69,6 @@ const blogId = body('data.attributes.blogId')
     .bail()
 
 export const postCreateInputDtoValidation = [
-    resourceTypeValidation(ResourceType.Posts),
     titleValidation,
     shortDescriptionValidation,
     contentValidation,
@@ -81,8 +76,6 @@ export const postCreateInputDtoValidation = [
 ];
 
 export const postUpdateInputDtoValidation = [
-    resourceTypeValidation(ResourceType.Posts),
-    dataIdMatchValidation,
     titleValidation,
     shortDescriptionValidation,
     contentValidation,

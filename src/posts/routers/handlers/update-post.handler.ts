@@ -11,7 +11,7 @@ export async function updatePostByIdHandler(
     try {
         const id = req.params.id;
 
-        await postsService.updatePostById(id, req.body.data.attributes);
+        await postsService.updatePostById(id, req.body);
 
         res.sendStatus(HttpStatus.NoContent);
     } catch (e: unknown) {

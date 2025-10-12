@@ -7,12 +7,12 @@ import { BlogCreateInput } from '../input/blog-create.input';
 
 export async function createBlogHandler(
     // createdAt: new Date().toISOString(),
-    req: Request<{}, {}, BlogCreateInput>, 
+    req: Request<{}, {}, BlogCreateInput>,
     res: Response
 ){
     try {
         const createdBlogId = await blogsService.createBlog(
-            req.body.data.attributes,
+            req.body,
         );
 
         const createdBlog = await blogsService.findBlogByIdOrFail(createdBlogId);
