@@ -13,7 +13,7 @@ import { postCreateInputDtoValidation, postUpdateInputDtoValidation } from "./po
 
 export const postRouter = Router({});
 
-postRouter.use(superAdminGuardMiddleware);
+// postRouter.use(superAdminGuardMiddleware);
 
 postRouter
     .get(
@@ -32,6 +32,7 @@ postRouter
 
     .post(
         '', 
+        superAdminGuardMiddleware,
         postCreateInputDtoValidation, 
         inputValidationResultMiddleware, 
         createPostHandler,
@@ -39,6 +40,7 @@ postRouter
 
     .put(
         '/:id', 
+        superAdminGuardMiddleware,
         idValidation, 
         postUpdateInputDtoValidation, 
         inputValidationResultMiddleware, 
@@ -47,6 +49,7 @@ postRouter
 
     .delete(
         '/:id', 
+        superAdminGuardMiddleware,
         idValidation, 
         inputValidationResultMiddleware, 
         deletePostHandler,

@@ -13,6 +13,7 @@ export function mapToPostListPaginatedOutput (
         pageSize: meta.pageSize,
         totalCount: meta.totalCount,
         items: posts.map((post) => ({
+            id: post._id.toString(),
             title: post.title,
             shortDescription: post.shortDescription,
             content: post.content,

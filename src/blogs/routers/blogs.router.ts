@@ -14,7 +14,7 @@ import { getBlogPostListHandler } from "./handlers/get-blog-post-list.handler";
 
 export const blogRouter = Router({});
 
-blogRouter.use(superAdminGuardMiddleware);
+// blogRouter.use(superAdminGuardMiddleware);
 
 blogRouter
     .get(
@@ -33,6 +33,7 @@ blogRouter
 
     .post(
         '', 
+        superAdminGuardMiddleware,
         blogCreateInputValidation, 
         inputValidationResultMiddleware, 
         createBlogHandler,
@@ -40,6 +41,7 @@ blogRouter
 
     .put(
         '/:id', 
+        superAdminGuardMiddleware,
         idValidation, 
         blogUpdateInputValidation, 
         inputValidationResultMiddleware, 
@@ -48,6 +50,7 @@ blogRouter
 
     .delete(
         '/:id', 
+        superAdminGuardMiddleware,
         idValidation, 
         inputValidationResultMiddleware, 
         deleteBlogHandler,
