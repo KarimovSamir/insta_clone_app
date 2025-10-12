@@ -25,7 +25,7 @@ export const blogsService = {
             description: dto.description,
             websiteUrl: dto.websiteUrl,
             createdAt: new Date().toISOString(),
-            isMembership: true,
+            isMembership: false,
             // createdAt: dto.createdAt,
             // isMembership: dto.isMembership,
         };
