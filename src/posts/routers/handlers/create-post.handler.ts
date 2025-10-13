@@ -3,7 +3,7 @@ import { HttpStatus } from '../../../core/types/http-statuses';
 import { postsService } from '../../application/posts.service';
 import { PostCreateInput } from '../input/post-create.input';
 import { mapToPostOutputUtil } from '../mappers/map-to-post-output.util';
-import { errorsHandler } from '../../../core/errors/errors.handler';
+// import { errorsHandler } from '../../../core/errors/errors.handler';
 
 export async function createPostHandler(
     // PostCreateInput нужен, чтобы строго ловить именно эти поля. 
@@ -17,7 +17,8 @@ export async function createPostHandler(
         const postOutput = mapToPostOutputUtil(createdPost);
         res.status(HttpStatus.Created).send(postOutput);
     } catch (e: unknown) {
-        errorsHandler(e, res);
+        // errorsHandler(e, res);
+        res.sendStatus(HttpStatus.InternalServerError);  
     }
 }
 

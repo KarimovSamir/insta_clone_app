@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { HttpStatus } from '../../../core/types/http-statuses';
-import { errorsHandler } from '../../../core/errors/errors.handler';
+// import { errorsHandler } from '../../../core/errors/errors.handler';
 import { blogsService } from '../../application/blogs.service';
 import { mapToBlogOutput } from '../mappers/map-to-blog-output.util';
 
@@ -16,6 +16,7 @@ export async function getBlogHandler(
 
     res.status(HttpStatus.Ok).send(blogOutput);
   } catch (e: unknown) {
-    errorsHandler(e, res);
+    // errorsHandler(e, res);
+    res.sendStatus(HttpStatus.NotFound);
   }
 }

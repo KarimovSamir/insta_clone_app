@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import { HttpStatus } from '../../../core/types/http-statuses';
 import { blogsService } from '../../application/blogs.service';
-import { errorsHandler } from '../../../core/errors/errors.handler';
+// import { errorsHandler } from '../../../core/errors/errors.handler';
 import { BlogUpdateInput } from '../input/blog-update.input';
 
 export async function updateBlogByIdHandler(
@@ -15,6 +15,7 @@ export async function updateBlogByIdHandler(
 
     res.sendStatus(HttpStatus.NoContent);
   } catch (e: unknown) {
-    errorsHandler(e, res);
+    // errorsHandler(e, res);
+    res.sendStatus(HttpStatus.NotFound);
   }
 }

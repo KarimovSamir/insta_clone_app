@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import { HttpStatus } from '../../../core/types/http-statuses';
 import { postsService } from '../../application/posts.service';
-import { errorsHandler } from '../../../core/errors/errors.handler';
+// import { errorsHandler } from '../../../core/errors/errors.handler';
 
 export async function deletePostHandler(    
     req: Request<{ id: string }>, 
@@ -14,7 +14,8 @@ export async function deletePostHandler(
 
         res.sendStatus(HttpStatus.NoContent);
     } catch (e: unknown) {
-        errorsHandler(e, res);
+        // errorsHandler(e, res);
+        res.sendStatus(HttpStatus.NotFound);
     }
 }
 

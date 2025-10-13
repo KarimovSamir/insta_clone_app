@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import { HttpStatus } from '../../../core/types/http-statuses';
 import { blogsService } from '../../application/blogs.service';
 import { mapToBlogOutput } from '../mappers/map-to-blog-output.util';
-import { errorsHandler } from '../../../core/errors/errors.handler';
+// import { errorsHandler } from '../../../core/errors/errors.handler';
 import { BlogCreateInput } from '../input/blog-create.input';
 
 export async function createBlogHandler(
@@ -21,7 +21,8 @@ export async function createBlogHandler(
 
         res.status(HttpStatus.Created).send(blogOutput);
     } catch (e: unknown) {
-        errorsHandler(e, res);
+        // errorsHandler(e, res);
+        res.sendStatus(HttpStatus.InternalServerError);  
     }
 }
 

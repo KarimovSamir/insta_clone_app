@@ -65,6 +65,13 @@ const DEFAULT_PAGE_SIZE = 10;
 const DEFAULT_SORT_DIRECTION = SortDirection.Desc; // должен быть строковым enum: 'asc' | 'desc'
 const DEFAULT_SORT_BY = 'createdAt';
 
+export const paginationAndSortingDefault = {
+  pageNumber: DEFAULT_PAGE_NUMBER,
+  pageSize: DEFAULT_PAGE_SIZE,
+  sortBy: DEFAULT_SORT_BY,
+  sortDirection: DEFAULT_SORT_DIRECTION,
+} as const;
+
 export function paginationAndSortingValidation<T extends string>(
   sortFieldsEnum: Record<string, T>,
 ) {

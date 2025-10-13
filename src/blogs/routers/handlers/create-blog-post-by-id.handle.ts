@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { errorsHandler } from '../../../core/errors/errors.handler';
+// import { errorsHandler } from '../../../core/errors/errors.handler';
 import { postsService } from '../../../posts/application/posts.service';
 import { PostCreateByBlogInput } from '../../../posts/routers/input/post-create.input';
 import { mapToPostOutputUtil } from '../../../posts/routers/mappers/map-to-post-output.util';
@@ -19,7 +19,8 @@ export async function createBlogPostByIdHandler(
         const postOutput = mapToPostOutputUtil(createdPost);
         res.status(HttpStatus.Created).send(postOutput);   
     } catch (e: unknown) {
-        errorsHandler(e, res);
+        // errorsHandler(e, res);
+        res.sendStatus(HttpStatus.NotFound);
     }
 }
 
