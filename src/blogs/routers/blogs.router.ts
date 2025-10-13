@@ -11,6 +11,7 @@ import { paginationAndSortingValidation } from "../../core/middlewares/validatio
 import { BlogSortField } from "./input/blog-sort-field";
 import { blogCreateInputValidation, blogUpdateInputValidation } from "./blog.input-dto.validation-middlewares";
 import { getBlogPostListHandler } from "./handlers/get-blog-post-list.handler";
+import { query } from "express-validator";
 
 export const blogRouter = Router({});
 
@@ -18,7 +19,11 @@ export const blogRouter = Router({});
 
 blogRouter
     .get(
-        '', 
+        '',
+        query('searchNameTerm')
+            .optional({ values: 'falsy' })
+            .isString()
+            .trim(),
         paginationAndSortingValidation(BlogSortField),
         inputValidationResultMiddleware,
         getBlogListHandler,
