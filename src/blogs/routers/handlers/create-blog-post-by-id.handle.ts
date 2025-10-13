@@ -4,6 +4,7 @@ import { postsService } from '../../../posts/application/posts.service';
 import { PostCreateByBlogInput } from '../../../posts/routers/input/post-create.input';
 import { mapToPostOutputUtil } from '../../../posts/routers/mappers/map-to-post-output.util';
 import { HttpStatus } from '../../../core/types/http-statuses';
+import { RepositoryNotFoundError } from '../../../core/errors/repository-not-found.error';
 
 export async function createBlogPostByIdHandler(
     req: Request<{ id: string }, {}, PostCreateByBlogInput>,
@@ -19,8 +20,11 @@ export async function createBlogPostByIdHandler(
         const postOutput = mapToPostOutputUtil(createdPost);
         res.status(HttpStatus.Created).send(postOutput);   
     } catch (e: unknown) {
-        // errorsHandler(e, res);
-        res.sendStatus(HttpStatus.NotFound);
+        if (e instanceof RepositoryNotFoundError) {
+            res.sendStatus(HttpStatus.NotFound);
+            return;
+        }
+        res.sendStatus(HttpStatus.InternalServerError);
     }
 }
 

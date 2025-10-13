@@ -6,6 +6,7 @@ import { mapToPostListPaginatedOutput } from '../../../posts/routers/mappers/map
 import { HttpStatus } from '../../../core/types/http-statuses';
 import { matchedData } from 'express-validator';
 import { setDefaultSortAndPaginationIfNotExist } from '../../../core/helpers/set-default-sort-and-pagination';
+import { RepositoryNotFoundError } from '../../../core/errors/repository-not-found.error';
 
 // export async function getBlogPostListHandler(
 //     req: Request<{ id: string }, {}, {}, PostQueryInput>,
@@ -57,6 +58,11 @@ export const getBlogPostListHandler: RequestHandler<{ id: string }> = async (
 
     res.send(postListOutput);
   } catch (e) {
+    if (e instanceof RepositoryNotFoundError) {
+      res.sendStatus(HttpStatus.NotFound);
+      return;
+    }
+    
     res.sendStatus(HttpStatus.InternalServerError);
   }
 };

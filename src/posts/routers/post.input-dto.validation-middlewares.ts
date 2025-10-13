@@ -77,7 +77,13 @@ export const postCreateInputDtoValidation = [
     titleValidation,
     shortDescriptionValidation,
     contentValidation,
-    blogId
+    blogId,
+];
+
+export const postCreateByBlogInputDtoValidation = [
+    titleValidation,
+    shortDescriptionValidation,
+    contentValidation,
 ];
 
 export const postUpdateInputDtoValidation = [
@@ -86,5 +92,5 @@ export const postUpdateInputDtoValidation = [
     titleValidation,
     shortDescriptionValidation,
     contentValidation,
-    blogId
+    blogId,
 ];
