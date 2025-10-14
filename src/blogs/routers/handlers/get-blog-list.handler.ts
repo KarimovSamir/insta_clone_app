@@ -48,8 +48,6 @@ export const getBlogListHandler: RequestHandler = async (req: Request, res: Resp
     //в req.query остаются сырые квери параметры (строки)
 
     const queryInput = setDefaultSortAndPaginationIfNotExist(sanitizedQuery);
-
-    // ты вызывал findBlogs дважды — оставим один вызов
     const { items, totalCount } = await blogsService.findBlogs(queryInput);
 
     const blogsListOutput = mapToBlogListPaginatedOutput(items, {

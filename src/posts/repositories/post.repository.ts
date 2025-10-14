@@ -30,6 +30,8 @@ export const postsRepository = {
         blogId: string,
     ): Promise<{ items: WithId<Post>[]; totalCount: number }> {
         const { pageNumber, pageSize, sortBy, sortDirection } = queryDto;
+        // Фильтрация по документации работала по другому. Теперь фильтр совпадает с текущей документацией
+        // const filter = { 'blog.id': blogId };
         const filter = { blogId };
         const skip = (pageNumber - 1) * pageSize;
 

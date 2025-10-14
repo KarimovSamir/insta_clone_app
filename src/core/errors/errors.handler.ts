@@ -1,51 +1,30 @@
-// import { Response } from 'express';
-// import { RepositoryNotFoundError } from './repository-not-found.error';
-// import { HttpStatus } from '../types/http-statuses';
-// import { createErrorMessages } from '../middlewares/validation/input-validtion-result.middleware';
-// import { DomainError } from './domain.error';
+// import { ValidationErrorType } from "../types/validationError";
 
+// export const CreateErrorMessages = (
+//     errors: ValidationErrorType[],
+// ): { errorsMessages: ValidationErrorType[] } => {
+//     return { errorsMessages: errors };
+// };
 
-// export function errorsHandler(error: unknown, res: Response): void {
-//   if (error instanceof RepositoryNotFoundError) {
-//     const httpStatus = HttpStatus.NotFound;
+import { NextFunction, Request, Response } from 'express';
+import { HttpStatus } from '../types/http-statuses';
+import { RepositoryNotFoundError } from './repository-not-found.error';
+import { DuplicateFieldError } from './duplicate-field.error';
 
-//     res.status(httpStatus).send(
-//       createErrorMessages([
-//         {
-//           status: httpStatus,
-//           detail: error.message,
-//         },
-//       ]),
-//     );
+// единый обработчик
+export function errorsHandler(err: unknown, _req: Request, res: Response, _next: NextFunction) {
+  // 404
+  if (err instanceof RepositoryNotFoundError) {
+    return res.sendStatus(HttpStatus.NotFound);
+  }
 
-//     return;
-//   }
+  // 400
+  if (err instanceof DuplicateFieldError) {
+    return res.status(HttpStatus.BadRequest).send({
+      errorsMessages: [{ field: err.field, message: err.message }],
+    });
+  }
 
-//   if (error instanceof DomainError) {
-//     const httpStatus = HttpStatus.UnprocessableEntity;
-
-//     res.status(httpStatus).send(
-//       createErrorMessages([
-//         {
-//           status: httpStatus,
-//           source: error.source,
-//           detail: error.message,
-//           code: error.code,
-//         },
-//       ]),
-//     );
-
-//     return;
-//   }
-
-//   res.status(HttpStatus.InternalServerError);
-//   return;
-// }
-
-import { ValidationErrorType } from "../types/validationError";
-
-export const CreateErrorMessages = (
-    errors: ValidationErrorType[],
-): { errorsMessages: ValidationErrorType[] } => {
-    return { errorsMessages: errors };
-};
+  // по умолчанию — 500
+  return res.sendStatus(HttpStatus.InternalServerError);
+}

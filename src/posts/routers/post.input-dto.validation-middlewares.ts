@@ -1,7 +1,4 @@
 import { body } from 'express-validator';
-import { resourceTypeValidation } from '../../core/middlewares/validation/resource-type.validation-middleware';
-import { ResourceType } from '../../core/types/resource-type';
-import { dataIdMatchValidation } from '../../core/middlewares/validation/params-id.validation-middleware';
 
 const titleValidation = body('title')
     .exists()
@@ -73,7 +70,6 @@ const blogId = body('blogId')
     .bail()
 
 export const postCreateInputDtoValidation = [
-    // resourceTypeValidation(ResourceType.Posts),
     titleValidation,
     shortDescriptionValidation,
     contentValidation,
@@ -87,8 +83,6 @@ export const postCreateByBlogInputDtoValidation = [
 ];
 
 export const postUpdateInputDtoValidation = [
-    // resourceTypeValidation(ResourceType.Posts),
-    // dataIdMatchValidation,
     titleValidation,
     shortDescriptionValidation,
     contentValidation,

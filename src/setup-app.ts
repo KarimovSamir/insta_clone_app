@@ -25,6 +25,7 @@ import { blogRouter } from "./blogs/routers/blogs.router";
 import { postRouter } from "./posts/routers/posts.router";
 import { TESTING_PATH, BLOGS_PATH, POSTS_PATH } from "./core/paths/paths";
 import { dbReady } from "./db/mongo.db";
+import { errorsHandler } from "./core/errors/errors.handler";
 
 export const setupApp = (app: Express) => {
   app.use(express.json());
@@ -48,6 +49,7 @@ export const setupApp = (app: Express) => {
   app.use(BLOGS_PATH, blogRouter);
   app.use(POSTS_PATH, postRouter);
   app.use(TESTING_PATH, testingRouter);
+  app.use(errorsHandler);
 
   return app;
 };
