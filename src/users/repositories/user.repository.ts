@@ -3,7 +3,7 @@ import { ObjectId, WithId } from 'mongodb';
 import { RepositoryNotFoundError } from "../../core/errors/repository-not-found.error";
 import { UserQueryInput } from '../routers/input/user-query.input';
 import { User } from '../domain/user';
-import { DuplicateFieldError } from '../../core/errors/duplicate-field.error';
+import { RepositoryBadRequestError } from '../../core/errors/repository-bad-request.error';
 
 export const usersRepository = {
     async findUsers(
@@ -59,7 +59,7 @@ export const usersRepository = {
             { projection: { _id: 1 } }
         );
         if (loginTaken) {
-            throw new DuplicateFieldError('login', 'Login is already in use');
+            throw new RepositoryBadRequestError('Login is already in use', 'login');
         }
 
         const emailTaken = await userCollection.findOne(
@@ -67,7 +67,7 @@ export const usersRepository = {
             { projection: { _id: 1 } }
         );
         if (emailTaken) {
-            throw new DuplicateFieldError('email', 'Email is already in use');
+            throw new RepositoryBadRequestError('Email is already in use', 'email');
         }
 
         const insertResult = await userCollection.insertOne({ ...newUser, login, email });
