@@ -1,5 +1,5 @@
 import { userCollection } from '../../db/mongo.db';
-import { ObjectId, WithId } from 'mongodb';
+import { Filter, ObjectId, WithId } from 'mongodb';
 import { RepositoryNotFoundError } from "../../core/errors/repository-not-found.error";
 import { UserQueryInput } from '../routers/input/user-query.input';
 import { User } from '../domain/user';
@@ -19,14 +19,29 @@ export const usersRepository = {
         } = queryDto;
 
         const skip = (pageNumber - 1) * pageSize;
-        const filter: any = {};
+        const filter: Filter<User> = {};
 
-        if (searchLoginTerm) {
-            filter.login = { $regex: searchLoginTerm, $options: 'i' };
-        }
+        // if (searchLoginTerm) {
+        //     filter.login = { $regex: searchLoginTerm, $options: 'i' };
+        // }
 
-        if (searchEmailTerm) {
-            filter.email = { $regex: searchEmailTerm, $options: 'i' };
+        const loginFilter = searchLoginTerm
+            ? { login: { $regex: searchLoginTerm, $options: 'i' } }
+            : null;
+        const emailFilter = searchEmailTerm
+            ? { email: { $regex: searchEmailTerm, $options: 'i' } }
+            : null;
+
+        // if (searchEmailTerm) {
+        //     filter.email = { $regex: searchEmailTerm, $options: 'i' };
+        // }
+
+        if (loginFilter && emailFilter) {
+            filter.$or = [loginFilter, emailFilter];
+        } else if (loginFilter) {
+            Object.assign(filter, loginFilter);
+        } else if (emailFilter) {
+            Object.assign(filter, emailFilter);
         }
 
         const items = await userCollection
