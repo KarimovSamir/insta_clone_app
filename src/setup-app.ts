@@ -23,9 +23,10 @@ import express, { Express } from "express";
 import { testingRouter } from "./testing/routers/testing.router";
 import { blogRouter } from "./blogs/routers/blogs.router";
 import { postRouter } from "./posts/routers/posts.router";
-import { TESTING_PATH, BLOGS_PATH, POSTS_PATH, USERS_PATH } from "./core/paths/paths";
+import { TESTING_PATH, BLOGS_PATH, POSTS_PATH, USERS_PATH, AUTH_PATH } from "./core/paths/paths";
 import { dbReady } from "./db/mongo.db";
 import { userRouter } from "./users/routers/users.router";
+import { authRouter } from "./auth/routers/auth.router";
 
 export const setupApp = (app: Express) => {
   app.use(express.json());
@@ -50,6 +51,7 @@ export const setupApp = (app: Express) => {
   app.use(POSTS_PATH, postRouter);
   app.use(USERS_PATH, userRouter);
   app.use(TESTING_PATH, testingRouter);
+  app.use(AUTH_PATH, authRouter);
 
   return app;
 };
