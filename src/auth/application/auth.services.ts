@@ -12,4 +12,5 @@ export const authService = {
 
         return bcryptService.checkPassword(dto.password, user.passwordHash);
     },
+
 };
