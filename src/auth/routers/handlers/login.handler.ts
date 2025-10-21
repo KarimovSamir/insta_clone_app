@@ -21,9 +21,15 @@ export async function loginHandler(
         return res.sendStatus(HttpStatus.Unauthorized);
     }
 
-    const user = await authRepository.findUserByLoginOrEmail(credentials.loginOrEmail);
+    const user = await authRepository.findUserByLoginOrEmail(
+        credentials.loginOrEmail.trim(),
+    );
+    if (!user) {
+        // Чтобы user не ругался на null
+        return res.sendStatus(HttpStatus.Unauthorized);
+    }
 
-    const token = jwtService.createToken(user!._id.toString());
+    const token = await jwtService.createToken(user._id.toString());
 
     return res.status(HttpStatus.Ok).json({ accessToken: token });
 
