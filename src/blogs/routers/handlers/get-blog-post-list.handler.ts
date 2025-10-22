@@ -34,35 +34,35 @@ import { RepositoryNotFoundError } from '../../../core/errors/repository-not-fou
 // }
 
 export const getBlogPostListHandler: RequestHandler<{ id: string }> = async (
-  req: Request<{ id: string }>,
-  res: Response
+    req: Request<{ id: string }>,
+    res: Response
 ) => {
-  try {
-    const blogId = req.params.id;
+    try {
+        const blogId = req.params.id;
 
-    // Берём только провалидированные query + приводим к нашему типу
-    const sanitizedQuery = matchedData(req, {
-      locations: ['query'],
-      includeOptionals: true,
-    }) as PostQueryInput;
+        // Берём только провалидированные query + приводим к нашему типу
+        const sanitizedQuery = matchedData(req, {
+            locations: ['query'],
+            includeOptionals: true,
+        }) as PostQueryInput;
 
-    const queryInput = setDefaultSortAndPaginationIfNotExist(sanitizedQuery);
+        const queryInput = setDefaultSortAndPaginationIfNotExist(sanitizedQuery);
 
-    const { items, totalCount } = await postsService.findPostsByBlog(queryInput, blogId);
+        const { items, totalCount } = await postsService.findPostsByBlog(queryInput, blogId);
 
-    const postListOutput = mapToPostListPaginatedOutput(items, {
-      pageNumber: queryInput.pageNumber,
-      pageSize: queryInput.pageSize,
-      totalCount,
-    });
+        const postListOutput = mapToPostListPaginatedOutput(items, {
+            pageNumber: queryInput.pageNumber,
+            pageSize: queryInput.pageSize,
+            totalCount,
+        });
 
-    res.send(postListOutput);
-  } catch (e) {
-    if (e instanceof RepositoryNotFoundError) {
-      res.sendStatus(HttpStatus.NotFound);
-      return;
+        res.send(postListOutput);
+    } catch (e) {
+        if (e instanceof RepositoryNotFoundError) {
+            res.sendStatus(HttpStatus.NotFound);
+            return;
+        }
+
+        res.sendStatus(HttpStatus.InternalServerError);
     }
-    
-    res.sendStatus(HttpStatus.InternalServerError);
-  }
 };

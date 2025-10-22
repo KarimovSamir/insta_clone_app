@@ -3,15 +3,18 @@ import { SETTINGS } from "../core/settings/settings";
 import { Blog } from "../blogs/domain/blog";
 import { Post } from "../posts/domain/post";
 import { User } from "../users/domain/user";
+import { Comment } from "../comments/domain/comment";
 
 const BLOG_COLLECTION_NAME = "blogs";
 const POST_COLLECTION_NAME = "posts";
 const USER_COLLECTION_NAME = "users";
+const COMMENT_COLLECTION_NAME = "comments";
 
 export let client: MongoClient;
 export let blogCollection: Collection<Blog>;
 export let postCollection: Collection<Post>;
 export let userCollection: Collection<User>;
+export let commentCollection: Collection<Comment>;
 
 // Кэшируем подключение между инвокациями функции
 let clientPromise: Promise<MongoClient> | null = null;
@@ -37,6 +40,7 @@ export function runDB(url: string): Promise<void> {
         blogCollection = db.collection<Blog>(BLOG_COLLECTION_NAME);
         postCollection = db.collection<Post>(POST_COLLECTION_NAME);
         userCollection = db.collection<User>(USER_COLLECTION_NAME);
+        commentCollection = db.collection<Comment>(COMMENT_COLLECTION_NAME);
 
         await db.command({ ping: 1 });
         console.log("✅ Connected to the database");

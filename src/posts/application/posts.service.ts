@@ -40,7 +40,7 @@ export const postsService = {
         return await postsRepository.createPost(newPost);
     },
 
-    async createPostWithUrlBlogId(blogIdUrl:string, dto: PostAttributes): Promise<string>{
+    async createPostWithUrlBlogId(blogIdUrl:string, dto: PostAttributes): Promise<string> {
         const blog = await blogsRepository.findBlogByIdOrFail(blogIdUrl);
 
         const newPost: Post = {

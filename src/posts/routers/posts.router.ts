@@ -10,6 +10,10 @@ import { superAdminGuardMiddleware } from '../../auth/middlewares/super-admin.gu
 import { paginationAndSortingValidation } from "../../core/middlewares/validation/query-pagination-sorting.validation-middleware";
 import { PostSortField } from "./input/post-sort-field";
 import { postCreateInputDtoValidation, postUpdateInputDtoValidation } from "./post.input-dto.validation-middlewares";
+import { createPostCommentByIdHandler } from "./handlers/create-post-comment-by-id.handler";
+import { bearerAuthGuard } from "../../auth/middlewares/bearer-auth.guard-middleware";
+import { createPostCommentByIdInputDtoValidation } from "../../comments/routers/comment.input-dto.validation-middlewares";
+import { getPostAllCommentsByIdHandler } from "./handlers/get-post-allComments-by-postId.handler";
 
 export const postRouter = Router({});
 
@@ -53,4 +57,20 @@ postRouter
         idValidation, 
         inputValidationResultMiddleware, 
         deletePostHandler,
+    )
+
+    .post(
+        '/:id/comments', 
+        bearerAuthGuard,
+        idValidation, 
+        createPostCommentByIdInputDtoValidation,
+        inputValidationResultMiddleware, 
+        createPostCommentByIdHandler,
+    )
+
+    .get(
+        '/:id/comments', 
+        idValidation, 
+        inputValidationResultMiddleware, 
+        getPostAllCommentsByIdHandler,
     )
