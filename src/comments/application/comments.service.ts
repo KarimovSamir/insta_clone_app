@@ -4,6 +4,7 @@ import { Comment } from "../domain/comment";
 import { CommentQueryInput } from "../routers/input/comment-query.input";
 import { commentsRepository } from "../repositories/comment.repository";
 import { CommentAttributes } from "./dtos/comment-attributes";
+import { RepositoryForbiddenError } from "../../core/errors/repository-forbidden.error";
 type CurrentUser = { _id: any; login: string; email: string; createdAt: string };
 
 export const commentsService = {
@@ -40,13 +41,22 @@ export const commentsService = {
         return await commentsRepository.createComment(newComment);;
     },
 
-    async deleteComment(id: string): Promise <void> {
-        await commentsRepository.deleteCommentById(id);
-        return;
+    async deleteComment(id: string, user: CurrentUser): Promise <void> {
+        // await commentsRepository.deleteCommentById(id);
+        // return;
+        const comment = await commentsRepository.findCommentByIdOrFail(id); // 404 если нет
+        if (comment.commentatorInfo.userId !== user._id.toString()) {
+            throw new RepositoryForbiddenError('You can delete only your own comments'); // 403
+        }
+        await commentsRepository.deleteCommentById(id); // 204
     },
 
-    async updateComment(id: string, dto: CommentAttributes): Promise <void> {
+    async updateComment(id: string, dto: CommentAttributes, user: CurrentUser): Promise <void> {
+        // debugger;
+        const comment = await commentsRepository.findCommentByIdOrFail(id); // 404 если нет
+        if (comment.commentatorInfo.userId !== user._id.toString()) {
+            throw new RepositoryForbiddenError('You can update only your own comments'); // 403
+        }
         await commentsRepository.updateCommentById(id, dto);
-        return;
     },
 }
