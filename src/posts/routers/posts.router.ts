@@ -14,6 +14,7 @@ import { createPostCommentByIdHandler } from "./handlers/create-post-comment-by-
 import { bearerAuthGuard } from "../../auth/middlewares/bearer-auth.guard-middleware";
 import { createPostCommentByIdInputDtoValidation } from "../../comments/routers/comment.input-dto.validation-middlewares";
 import { getPostAllCommentsByIdHandler } from "./handlers/get-post-allComments-by-postId.handler";
+import { CommentSortField } from "../../comments/routers/input/comment-sort-field";
 
 export const postRouter = Router({});
 
@@ -71,6 +72,7 @@ postRouter
     .get(
         '/:id/comments', 
         idValidation, 
+        paginationAndSortingValidation(CommentSortField),
         inputValidationResultMiddleware, 
         getPostAllCommentsByIdHandler,
     )
