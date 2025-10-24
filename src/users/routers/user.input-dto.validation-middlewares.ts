@@ -55,8 +55,11 @@ const emailUrlValidation = body('email')
     .withMessage('email must not be empty')
     .bail()
 
-    .matches(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)
+    .isEmail()
     .withMessage('Invalid email format');
+
+    // .matches(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)
+    // .withMessage('Invalid email format');
 
 export const userCreateInputValidation = [
   loginValidation,
