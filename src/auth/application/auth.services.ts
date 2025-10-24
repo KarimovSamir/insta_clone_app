@@ -7,7 +7,7 @@ import { mailer } from '../adapters/resend.mailer';
 import { authRepository } from '../repositories/auth.repository';
 import { AuthAttributes } from './dtos/auth-attributes';
 import { RegistrationAttributes } from './dtos/registration-attributes';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 
 export const authService = {
     async validateCredentials(dto: AuthAttributes): Promise<boolean> {
@@ -25,7 +25,7 @@ export const authService = {
             email: dto.email.trim().toLowerCase(),
         });
 
-        const code = uuidv4();
+        const code = randomUUID();
         const now = Date.now();
         const email = dto.email.trim().toLowerCase();
         await usersRepository.setEmailConfirmationByEmail(email, {
