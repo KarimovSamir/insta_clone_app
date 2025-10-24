@@ -63,3 +63,7 @@ export const userCreateInputValidation = [
   passwordValidation,
   emailUrlValidation
 ];
+
+export const emailInputValidation = [
+  emailUrlValidation
+];

@@ -2,7 +2,7 @@ import { userCollection } from '../../db/mongo.db';
 import { Filter, ObjectId, WithId } from 'mongodb';
 import { RepositoryNotFoundError } from "../../core/errors/repository-not-found.error";
 import { UserQueryInput } from '../routers/input/user-query.input';
-import { User } from '../domain/user';
+import { User, EmailConfirmation } from '../domain/user';
 import { RepositoryBadRequestError } from '../../core/errors/repository-bad-request.error';
 
 export const usersRepository = {
@@ -65,7 +65,7 @@ export const usersRepository = {
         return res;
     },
 
-    async createUser(newUser: User): Promise<string>{
+    async createUser(newUser: User): Promise<string> {
         const login = newUser.login.trim();
         const email = newUser.email.trim().toLowerCase();
 
@@ -89,7 +89,7 @@ export const usersRepository = {
         return insertResult.insertedId.toString();
     },
 
-    async deleteUserById(id: string): Promise<void>{
+    async deleteUserById(id: string): Promise<void> {
         const deleteResult = await userCollection.deleteOne({
             _id: new ObjectId(id),
         });
@@ -99,4 +99,29 @@ export const usersRepository = {
         }
         return;
     },
+
+    async setEmailConfirmationByEmail(email: string, emailConfirmation: EmailConfirmation): Promise<void> {
+        await userCollection.updateOne(
+            { email: email.trim().toLowerCase() },
+            { $set: { emailConfirmation } }
+        );
+    },
+
+    async findByConfirmationCode(code: string): Promise<WithId<User> | null> {
+        return userCollection.findOne({ 'emailConfirmation.confirmationCode': code });
+    },
+
+    async confirmUserById(id: string): Promise<void> {
+        const res = await userCollection.updateOne(
+            { _id: new ObjectId(id) },
+            {
+                $set: { 'emailConfirmation.isConfirmed': true },
+                $unset: { 'emailConfirmation.confirmationCode': '' }
+            }
+        );
+        if (res.matchedCount < 1) {
+            throw new RepositoryNotFoundError('User not exist');
+        }
+    },
+
 }
