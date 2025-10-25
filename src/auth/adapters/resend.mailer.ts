@@ -1,34 +1,19 @@
-// import { Resend } from 'resend';
-// import { SETTINGS } from '../../core/settings/settings';
-
-// if (!SETTINGS.RESEND_API_KEY) {
-//     throw new Error('RESEND_API_KEY is not set');
-// }
-
-// const resend = new Resend(SETTINGS.RESEND_API_KEY);
-
-// export type SendEmailParams = {
-//     to: string;
-//     subject: string;
-//     html: string;
-// };
-
-// export const mailer = {
-//     async send({ to, subject, html }: SendEmailParams): Promise<void> {
-//         const from = SETTINGS.MAIL_FROM;
-//         await resend.emails.send({ from, to, subject, html });
-//     },
-// };
-
 import { Resend } from 'resend';
 import { SETTINGS } from '../../core/settings/settings';
 
 let resend: Resend | null = null;
 
 function getClient(): Resend | null {
+    console.log('[mail] getClient called');
+    console.log('[mail] SETTINGS.RESEND_API_KEY exists?', !!SETTINGS.RESEND_API_KEY);
+
     if (!resend) {
-        if (!SETTINGS.RESEND_API_KEY) return null;
+        if (!SETTINGS.RESEND_API_KEY) {
+            console.error('[mail] No RESEND_API_KEY provided!');
+            return null;
+        }
         resend = new Resend(SETTINGS.RESEND_API_KEY);
+        console.log('[mail] New Resend client created');
     }
     return resend;
 }
@@ -41,15 +26,25 @@ export type SendEmailParams = {
 
 export const mailer = {
     async send({ to, subject, html }: SendEmailParams): Promise<void> {
+        console.log('[mail] send() called with:', { to, subject });
         const client = getClient();
+
         if (!client) {
+            console.error('[mail] Cannot send mail — client is null');
             return;
         }
-        await client.emails.send({
-            from: SETTINGS.MAIL_FROM,
-            to,
-            subject,
-            html,
-        });
+
+        try {
+            const result = await client.emails.send({
+                from: SETTINGS.MAIL_FROM,
+                to,
+                subject,
+                html,
+            });
+            console.log('[mail] Email send result:', result);
+        } catch (err) {
+            console.error('[mail] Email send error:', err);
+            throw err;
+        }
     },
 };

@@ -5,11 +5,11 @@ import { blogCollection, commentCollection, postCollection, userCollection } fro
 export const testingRouter = Router({});
 
 testingRouter.delete('/all-data', async (req: Request, res: Response) => {
-  await Promise.all([
-    postCollection.deleteMany(),
-    blogCollection.deleteMany(),
-    userCollection.deleteMany(),
-    commentCollection.deleteMany(),
-  ]);
-  res.sendStatus(HttpStatus.NoContent);
+    await Promise.all([
+        postCollection.deleteMany(),
+        blogCollection.deleteMany(),
+        userCollection.deleteMany(),
+        commentCollection.deleteMany(),
+    ]);
+    res.sendStatus(HttpStatus.NoContent);
 });

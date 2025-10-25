@@ -36,11 +36,12 @@ export const authService = {
         });
 
         const confirmLink = `${SETTINGS.FRONTEND_CONFIRM_URL}?code=${encodeURIComponent(code)}`;
+        console.log('[mail] env_key?', !!process.env.RESEND_API_KEY, 'settings_key?', !!SETTINGS.RESEND_API_KEY);
         await mailer.send({
             to: dto.email.trim().toLowerCase(),
             subject: 'Confirm your registration',
             html: `
-                <h1>Thank you for your registration</h1>
+                <h1>Thank for your registration</h1>
                 <p>To finish registration please follow the link below:
                 <a href="${confirmLink}">complete registration</a>
                 </p>

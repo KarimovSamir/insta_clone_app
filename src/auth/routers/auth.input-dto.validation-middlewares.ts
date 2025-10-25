@@ -1,5 +1,5 @@
 import { body } from 'express-validator';
-import { userCreateInputValidation } from '../../users/routers/user.input-dto.validation-middlewares';
+import { emailInputValidation, userCreateInputValidation } from '../../users/routers/user.input-dto.validation-middlewares';
 
 const loginOrEmailValidation = body('loginOrEmail')
   .exists()
@@ -39,3 +39,4 @@ export const authInputValidation = [
 ];
 
 export const authRegistrationValidation = userCreateInputValidation;
+export const emailConfirmationValidation = emailInputValidation;
