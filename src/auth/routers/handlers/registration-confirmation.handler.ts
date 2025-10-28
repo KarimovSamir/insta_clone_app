@@ -3,9 +3,7 @@ import { HttpStatus } from '../../../core/types/http-statuses';
 import { RepositoryBadRequestError } from '../../../core/errors/repository-bad-request.error';
 import { authService } from '../../application/auth.services';
 
-type Body = { code: string };
-
-export async function registrationConfirmationHandler(req: Request<{}, {}, Body>, res: Response) {
+export async function registrationConfirmationHandler(req: Request<{}, {}, { code: string }>, res: Response) {
     try {
         await authService.confirmByCode(req.body.code);
         return res.sendStatus(HttpStatus.NoContent);

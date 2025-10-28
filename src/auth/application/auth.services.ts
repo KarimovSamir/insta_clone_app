@@ -36,9 +36,43 @@ export const authService = {
         });
 
         const confirmLink = `${SETTINGS.FRONTEND_CONFIRM_URL}?code=${encodeURIComponent(code)}`;
-        console.log('[mail] env_key?', !!process.env.RESEND_API_KEY, 'settings_key?', !!SETTINGS.RESEND_API_KEY);
+        // console.log('[mail] env_key?', !!process.env.RESEND_API_KEY, 'settings_key?', !!SETTINGS.RESEND_API_KEY);
         await mailer.send({
-            to: dto.email.trim().toLowerCase(),
+            // to: dto.email.trim().toLowerCase(),
+            to: email,
+            subject: 'Confirm your registration',
+            html: `
+                <h1>Thank for your registration</h1>
+                <p>To finish registration please follow the link below:
+                <a href="${confirmLink}">complete registration</a>
+                </p>
+            `,
+        });
+
+        return;
+    },
+
+    async resendingMail(userEmail: string): Promise<void> {
+        // await usersService.createUser({
+        //     login: dto.login.trim(),
+        //     password: dto.password,
+        //     email: dto.email.trim().toLowerCase(),
+        // });
+
+        const code = randomUUID();
+        const now = Date.now();
+        const email = userEmail.trim().toLowerCase();
+        await usersRepository.setEmailConfirmationByEmail(email, {
+            confirmationCode: code,
+            // 15 минут
+            expirationDate: new Date(now + 15 * 60 * 1000).toISOString(),
+            isConfirmed: false,
+        });
+
+        const confirmLink = `${SETTINGS.FRONTEND_CONFIRM_URL}?code=${encodeURIComponent(code)}`;
+        // console.log('[mail] env_key?', !!process.env.RESEND_API_KEY, 'settings_key?', !!SETTINGS.RESEND_API_KEY);
+        await mailer.send({
+            to: email,
             subject: 'Confirm your registration',
             html: `
                 <h1>Thank for your registration</h1>
