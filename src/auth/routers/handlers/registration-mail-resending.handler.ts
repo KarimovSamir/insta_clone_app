@@ -6,7 +6,7 @@ import { RegistrationAttributes } from '../../application/dtos/registration-attr
 import { authRepository } from '../../repositories/auth.repository';
 
 export async function registrationMailResendingHandler(
-    req: Request<{}, {}, {email: string}>,
+    req: Request<{}, {}, { email: string }>,
     res: Response,
 ) {
     try {
@@ -15,8 +15,16 @@ export async function registrationMailResendingHandler(
             userEmail,
         );
 
-        if (!user || user.emailConfirmation?.isConfirmed === true) {
-            return res.sendStatus(HttpStatus.BadRequest);
+        if (!user) {
+            return res.status(HttpStatus.BadRequest).json({
+                errorsMessages: [{ message: 'User not found', field: 'email' }],
+            });
+        }
+
+        if (user.emailConfirmation?.isConfirmed) {
+            return res.status(HttpStatus.BadRequest).json({
+                errorsMessages: [{ message: 'Email already confirmed', field: 'email' }],
+            });
         }
 
         await authService.resendingMail(userEmail);
@@ -24,7 +32,6 @@ export async function registrationMailResendingHandler(
         return res.sendStatus(HttpStatus.NoContent); // 204
     } catch (e) {
         if (e instanceof RepositoryBadRequestError) {
-            // Ровно тот формат, который у тебя принят в проекте
             return res.status(HttpStatus.BadRequest).json({
                 errorsMessages: [{ message: e.message, field: e.field ?? '' }],
             });
