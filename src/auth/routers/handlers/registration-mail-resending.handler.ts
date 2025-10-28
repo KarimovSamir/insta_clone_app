@@ -14,9 +14,9 @@ export async function registrationMailResendingHandler(
         const user = await authRepository.findUserByLoginOrEmail(
             userEmail,
         );
-        if (!user) {
-            // Чтобы user не ругался на null
-            return res.sendStatus(HttpStatus.Unauthorized);
+
+        if (!user || user.emailConfirmation?.isConfirmed === true) {
+            return res.sendStatus(HttpStatus.BadRequest);
         }
 
         await authService.resendingMail(userEmail);
