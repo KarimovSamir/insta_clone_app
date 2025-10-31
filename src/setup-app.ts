@@ -28,9 +28,11 @@ import { dbReady } from "./db/mongo.db";
 import { userRouter } from "./users/routers/users.router";
 import { authRouter } from "./auth/routers/auth.router";
 import { commentRouter } from "./comments/routers/comments.router";
+import cookieParser from 'cookie-parser';
 
 export const setupApp = (app: Express) => {
   app.use(express.json());
+  app.use(cookieParser());
 
   // не ждём БД
   app.get("/", (req, res) => {

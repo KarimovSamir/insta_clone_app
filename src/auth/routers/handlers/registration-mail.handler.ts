@@ -13,7 +13,6 @@ export async function registrationMailHandler(
         return res.sendStatus(HttpStatus.NoContent); // 204
     } catch (e) {
         if (e instanceof RepositoryBadRequestError) {
-            // Ровно тот формат, который у тебя принят в проекте
             return res.status(HttpStatus.BadRequest).json({
                 errorsMessages: [{ message: e.message, field: e.field ?? '' }],
             });

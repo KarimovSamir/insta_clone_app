@@ -4,17 +4,20 @@ import { Blog } from "../blogs/domain/blog";
 import { Post } from "../posts/domain/post";
 import { User } from "../users/domain/user";
 import { Comment } from "../comments/domain/comment";
+import { BlacklistRefToken } from "../auth/domain/blacklistRefToken";
 
 const BLOG_COLLECTION_NAME = "blogs";
 const POST_COLLECTION_NAME = "posts";
 const USER_COLLECTION_NAME = "users";
 const COMMENT_COLLECTION_NAME = "comments";
+const BLACKLIST_REF_TOKEN_COLLECTION_NAME = "blacklist_ref_token";
 
 export let client: MongoClient;
 export let blogCollection: Collection<Blog>;
 export let postCollection: Collection<Post>;
 export let userCollection: Collection<User>;
 export let commentCollection: Collection<Comment>;
+export let blacklistRefTokenCollection: Collection<BlacklistRefToken>;
 
 // Кэшируем подключение между инвокациями функции
 let clientPromise: Promise<MongoClient> | null = null;
@@ -41,6 +44,7 @@ export function runDB(url: string): Promise<void> {
         postCollection = db.collection<Post>(POST_COLLECTION_NAME);
         userCollection = db.collection<User>(USER_COLLECTION_NAME);
         commentCollection = db.collection<Comment>(COMMENT_COLLECTION_NAME);
+        blacklistRefTokenCollection = db.collection<BlacklistRefToken>(BLACKLIST_REF_TOKEN_COLLECTION_NAME);
 
         await db.command({ ping: 1 });
         console.log("✅ Connected to the database");

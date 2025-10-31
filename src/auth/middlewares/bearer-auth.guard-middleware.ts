@@ -4,14 +4,6 @@ import { jwtService } from '../adapters/jwt.service';
 import { userCollection } from '../../db/mongo.db';
 import { ObjectId } from 'mongodb';
 
-// declare global {
-//     namespace Express {
-//         interface Locals {
-//             currentUser?: { _id: ObjectId; login: string; email: string; createdAt: string };
-//         }
-//     }
-// }
-
 export const bearerAuthGuard = async (req: Request, res: Response, next: NextFunction) => {
     const auth = req.headers['authorization'];
     if (!auth || !auth.startsWith('Bearer ')) {
@@ -19,7 +11,7 @@ export const bearerAuthGuard = async (req: Request, res: Response, next: NextFun
     }
 
     const token = auth.substring('Bearer '.length);
-    const payload = await jwtService.verifyToken(token); // { userId } | null
+    const payload = await jwtService.verifyAccessToken(token); // { userId } | null
     if (!payload?.userId) {
         return res.sendStatus(HttpStatus.Unauthorized);
     }

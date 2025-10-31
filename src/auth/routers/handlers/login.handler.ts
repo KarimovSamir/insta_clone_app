@@ -5,6 +5,7 @@ import { authService } from '../../application/auth.services';
 import { HttpStatus } from '../../../core/types/http-statuses';
 import { jwtService } from '../../adapters/jwt.service';
 import { authRepository } from '../../repositories/auth.repository';
+import { SETTINGS } from '../../../core/settings/settings';
 
 export async function loginHandler(
     req: Request<{}, {}, AuthLoginInput>,
@@ -29,9 +30,17 @@ export async function loginHandler(
         return res.sendStatus(HttpStatus.Unauthorized);
     }
 
-    const token = await jwtService.createToken(user._id.toString());
+    const accToken = await jwtService.createAccessToken(user._id.toString());
+    const refreshToken = await jwtService.createRefreshToken(user._id.toString());
 
-    return res.status(HttpStatus.Ok).json({ accessToken: token });
+    res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: true, // локально false, в проде true
+        sameSite: 'strict',
+        maxAge: SETTINGS.RT_TIME * 1000,
+    });
+
+    return res.status(HttpStatus.Ok).json({ accessToken: accToken });
 
     // return res.sendStatus(HttpStatus.NoContent);
 }
