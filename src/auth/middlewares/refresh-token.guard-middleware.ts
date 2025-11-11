@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { HttpStatus } from '../../core/types/http-statuses';
 import { jwtService } from '../adapters/jwt.service';
 import { tokenBlacklistService } from '../application/token-blacklist.service';
+import { deviceSessionsService } from '../../device_sessions/application/device-sessions.service';
 
 export async function refreshTokenGuard(req: Request, res: Response, next: NextFunction) {
     // берём refreshToken из куки
@@ -19,6 +20,12 @@ export async function refreshTokenGuard(req: Request, res: Response, next: NextF
     // проверяем подписи и срок жизни токена
     const payload = await jwtService.verifyRefreshToken(refreshToken);
     if (!payload || !payload.userId || !payload.exp || !payload.deviceId) {
+        return res.sendStatus(HttpStatus.Unauthorized);
+    }
+
+    // проверка, что сессия всё ещё существует
+    const session = await deviceSessionsService.findSession(payload.userId, payload.deviceId);
+    if (!session) {
         return res.sendStatus(HttpStatus.Unauthorized);
     }
 
