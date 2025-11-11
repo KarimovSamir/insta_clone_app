@@ -6,6 +6,7 @@ import { User } from "../users/domain/user";
 import { Comment } from "../comments/domain/comment";
 import { BlacklistRefToken } from "../auth/domain/blacklistRefToken";
 import { DeviceSession } from "../device_sessions/domain/device-session";
+import { RateLimitRecord } from "../auth/domain/rate-limit-record";
 
 const BLOG_COLLECTION_NAME = "blogs";
 const POST_COLLECTION_NAME = "posts";
@@ -13,6 +14,7 @@ const USER_COLLECTION_NAME = "users";
 const COMMENT_COLLECTION_NAME = "comments";
 const BLACKLIST_REF_TOKEN_COLLECTION_NAME = "blacklist_ref_token";
 const DEVICE_SESSIONS = "device_sessions";
+const RATE_LIMIT_COLLECTION_NAME = "rate_limit";
 
 export let client: MongoClient;
 export let blogCollection: Collection<Blog>;
@@ -21,6 +23,7 @@ export let userCollection: Collection<User>;
 export let commentCollection: Collection<Comment>;
 export let blacklistRefTokenCollection: Collection<BlacklistRefToken>;
 export let deviceSessionsCollection: Collection<DeviceSession>;
+export let rateLimitCollection: Collection<RateLimitRecord>;
 
 // Кэшируем подключение между инвокациями функции
 let clientPromise: Promise<MongoClient> | null = null;
@@ -49,6 +52,7 @@ export function runDB(url: string): Promise<void> {
         commentCollection = db.collection<Comment>(COMMENT_COLLECTION_NAME);
         blacklistRefTokenCollection = db.collection<BlacklistRefToken>(BLACKLIST_REF_TOKEN_COLLECTION_NAME);
         deviceSessionsCollection = db.collection<DeviceSession>(DEVICE_SESSIONS);
+        rateLimitCollection = db.collection<RateLimitRecord>(RATE_LIMIT_COLLECTION_NAME);
 
         await db.command({ ping: 1 });
         console.log("✅ Connected to the database");
