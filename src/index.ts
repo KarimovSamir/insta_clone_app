@@ -21,7 +21,7 @@ import { runDB } from "./db/mongo.db";
 import { SETTINGS } from "./core/settings/settings";
 
 const app = express();
-
+app.set('trust proxy', true);
 setupApp(app);
 
 runDB(SETTINGS.MONGO_URL).catch((err) => {

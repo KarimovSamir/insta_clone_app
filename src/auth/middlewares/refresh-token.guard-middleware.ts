@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { HttpStatus } from '../../core/types/http-statuses';
-import { tokenBlacklistRepository } from '../repositories/token-blacklist.repository';
 import { jwtService } from '../adapters/jwt.service';
+import { tokenBlacklistService } from '../application/token-blacklist.service';
 
 export async function refreshTokenGuard(req: Request, res: Response, next: NextFunction) {
     // берём refreshToken из куки
@@ -11,14 +11,14 @@ export async function refreshTokenGuard(req: Request, res: Response, next: NextF
     }
 
     // проверка не в blacklist ли он уже
-    const blacklisted = await tokenBlacklistRepository.isBlacklisted(refreshToken);
+    const blacklisted = await tokenBlacklistService.isBlacklisted(refreshToken);
     if (blacklisted) {
         return res.sendStatus(HttpStatus.Unauthorized);
     }
 
     // проверяем подписи и срок жизни токена
     const payload = await jwtService.verifyRefreshToken(refreshToken);
-    if (!payload || !payload.userId || !payload.exp) {
+    if (!payload || !payload.userId || !payload.exp || !payload.deviceId) {
         return res.sendStatus(HttpStatus.Unauthorized);
     }
 

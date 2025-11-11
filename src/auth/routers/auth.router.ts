@@ -10,11 +10,13 @@ import { registrationMailResendingHandler } from './handlers/registration-mail-r
 import { refreshTokenGuard } from '../middlewares/refresh-token.guard-middleware';
 import { refreshTokenHandler } from './handlers/refresh-token.handler';
 import { logoutHandler } from './handlers/logout.handler';
+import { rateLimitMiddleware } from '../middlewares/rate-limit-auth.middleware';
 
 export const authRouter = Router({});
 
 authRouter.post(
     '/login',
+    rateLimitMiddleware,
     authInputValidation,
     inputValidationResultMiddleware,
     loginHandler,
@@ -34,18 +36,21 @@ authRouter.post(
 
 authRouter.post(
     '/registration',
+    rateLimitMiddleware,
     authRegistrationValidation,
     inputValidationResultMiddleware,
     registrationMailHandler,
 );
 
 authRouter.post(
-    '/registration-confirmation', 
+    '/registration-confirmation',
+    rateLimitMiddleware,
     registrationConfirmationHandler,
 );
 
 authRouter.post(
-    '/registration-email-resending', 
+    '/registration-email-resending',
+    rateLimitMiddleware,
     emailConfirmationValidation,
     inputValidationResultMiddleware,
     registrationMailResendingHandler,

@@ -6,6 +6,9 @@ import { HttpStatus } from '../../../core/types/http-statuses';
 import { jwtService } from '../../adapters/jwt.service';
 import { authRepository } from '../../repositories/auth.repository';
 import { SETTINGS } from '../../../core/settings/settings';
+import { DeviceSessionAttributes } from '../../../device_sessions/application/dtos/device-session-attributes';
+import { randomUUID } from 'crypto';
+import { deviceSessionsService } from '../../../device_sessions/application/device-sessions.service';
 
 export async function loginHandler(
     req: Request<{}, {}, AuthLoginInput>,
@@ -30,8 +33,22 @@ export async function loginHandler(
         return res.sendStatus(HttpStatus.Unauthorized);
     }
 
+    const sessionDeviceId = randomUUID();
+    const now = new Date();
+
+    const sessionCredentials: DeviceSessionAttributes = {
+        ip: req.ip!, // работает из-за trust proxy в index.ts
+        title: req.get("user-agent") ?? "Unknown device",
+        lastActiveDate: now.toISOString(),
+        deviceId: sessionDeviceId,
+        userId: user._id.toString(),
+        exp: new Date(now.getTime() + SETTINGS.RT_TIME * 1000).toISOString(),
+    };
+
+    await deviceSessionsService.createSession(sessionCredentials);
+
     const accToken = await jwtService.createAccessToken(user._id.toString());
-    const refreshToken = await jwtService.createRefreshToken(user._id.toString());
+    const refreshToken = await jwtService.createRefreshToken(user._id.toString(), sessionDeviceId);
 
     res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
