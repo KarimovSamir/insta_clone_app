@@ -6,18 +6,11 @@ export const rateLimitRepository = {
         await rateLimitCollection.insertOne(record);
     },
 
-    async countRequests(ip: string, url: string, fromDateIso: string): Promise<number> {
+    async countRequests(ip: string, url: string, fromDate: Date): Promise<number> {
         return rateLimitCollection.countDocuments({
             ip,
             url,
-            date: { $gte: fromDateIso },
-        });
-    },
-
-    // опционально: можно сделать чистилку старых записей
-    async deleteOlderThan(dateIso: string): Promise<void> {
-        await rateLimitCollection.deleteMany({
-            date: { $lt: dateIso },
+            date: { $gte: fromDate },
         });
     },
 };

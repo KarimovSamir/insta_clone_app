@@ -34,41 +34,55 @@ let clientPromise: Promise<MongoClient> | null = null;
 export let dbReady: Promise<void> | null = null;
 
 export function runDB(url: string): Promise<void> {
-  if (!clientPromise) {
-    client = new MongoClient(url);
-    clientPromise = client.connect();
-  }
+    if (!clientPromise) {
+        client = new MongoClient(url);
+        clientPromise = client.connect();
+    }
 
-  // Инициализируем коллекции один раз и сохраняем промис
-  if (!dbReady) {
-    dbReady = (async () => {
-      try {
-        client = await clientPromise!;
-        const db: Db = client.db(SETTINGS.DB_NAME);
+    // Инициализируем коллекции один раз и сохраняем промис
+    if (!dbReady) {
+        dbReady = (async () => {
+            try {
+                client = await clientPromise!;
+                const db: Db = client.db(SETTINGS.DB_NAME);
 
-        blogCollection = db.collection<Blog>(BLOG_COLLECTION_NAME);
-        postCollection = db.collection<Post>(POST_COLLECTION_NAME);
-        userCollection = db.collection<User>(USER_COLLECTION_NAME);
-        commentCollection = db.collection<Comment>(COMMENT_COLLECTION_NAME);
-        blacklistRefTokenCollection = db.collection<BlacklistRefToken>(BLACKLIST_REF_TOKEN_COLLECTION_NAME);
-        deviceSessionsCollection = db.collection<DeviceSession>(DEVICE_SESSIONS);
-        rateLimitCollection = db.collection<RateLimitRecord>(RATE_LIMIT_COLLECTION_NAME);
+                blogCollection = db.collection<Blog>(BLOG_COLLECTION_NAME);
+                postCollection = db.collection<Post>(POST_COLLECTION_NAME);
+                userCollection = db.collection<User>(USER_COLLECTION_NAME);
+                commentCollection = db.collection<Comment>(COMMENT_COLLECTION_NAME);
+                blacklistRefTokenCollection = db.collection<BlacklistRefToken>(BLACKLIST_REF_TOKEN_COLLECTION_NAME);
+                deviceSessionsCollection = db.collection<DeviceSession>(DEVICE_SESSIONS);
+                rateLimitCollection = db.collection<RateLimitRecord>(RATE_LIMIT_COLLECTION_NAME);
 
-        await db.command({ ping: 1 });
-        console.log("✅ Connected to the database");
-      } catch (e) {
-        console.error("❌ Database not connected:", e);
-        // не оставляем висящее состояние
-        dbReady = null;
-        throw e;
-      }
-    })();
-  }
+                // TTL индексы
+                // уникальный индекс по deviceId
+                await deviceSessionsCollection.createIndex({ deviceId: 1 }, { unique: true });
+                // mongo примерно раз в 60 секунд делает чистку. МЫ не контролируем пробег самого mongo
+                // но мы контролируем, когда он удаляет через поле expireAfterSeconds (в секундах)
+                await blacklistRefTokenCollection.createIndex(
+                    { exp: 1 },
+                    { expireAfterSeconds: 0 } // документ удалится ровно в момент exp, когда сам монго сделает свой пробег TTL
+                );
+                // Тут, при expireAfterSeconds: 60 мы добавляет к exp ещё 60 секунд
+                // То есть, грубо говоря, запись удалить на втором пробеге TTL (60 секунд + 60 секунд)
+                // Если коротко, то монго удаляет всё у кого протух exp каждые 60 секунд при пробеге TTL
+                await rateLimitCollection.createIndex({ date: 1 }, { expireAfterSeconds: 60 });
 
-  return dbReady;
+                await db.command({ ping: 1 });
+                console.log("✅ Connected to the database");
+            } catch (e) {
+                console.error("❌ Database not connected:", e);
+                // не оставляем висящее состояние
+                dbReady = null;
+                throw e;
+            }
+        })();
+    }
+
+    return dbReady;
 }
 
 export async function stopDb() {
-  if (!client) throw new Error("❌ No active client");
-  await client.close();
+    if (!client) throw new Error("❌ No active client");
+    await client.close();
 }

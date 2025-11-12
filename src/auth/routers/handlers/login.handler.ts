@@ -50,14 +50,31 @@ export async function loginHandler(
     const accToken = await jwtService.createAccessToken(user._id.toString());
     const refreshToken = await jwtService.createRefreshToken(user._id.toString(), sessionDeviceId);
 
-    res.cookie('refreshToken', refreshToken, {
-        httpOnly: true,
-        secure: true, // локально false, в проде true
-        sameSite: 'strict',
-        maxAge: SETTINGS.RT_TIME * 1000,
-    });
+    // res.cookie('refreshToken', refreshToken, {
+    //     httpOnly: true,
+    //     secure: true, // локально false, в проде true
+    //     sameSite: 'strict',
+    //     maxAge: SETTINGS.RT_TIME * 1000,
+    // });
 
-    return res.status(HttpStatus.Ok).json({ accessToken: accToken });
+    // return res.status(HttpStatus.Ok).json({ accessToken: accToken });
+
+    // Короче, если res.cookie ответ упал, в БД останется мертвая сессия, то есть всё равно происходит запись в БД
+    // При этом нет проблем, пользователь не пройдёт логин. Но запись в БД всё равно будет. 
+    // При try catch мы отлавливаем (надеюсь) сдохшую сессию и удаляем сессию, которая и не должна быть
+    try {
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: true, // локально false, в проде true
+            sameSite: 'strict',
+            maxAge: SETTINGS.RT_TIME * 1000,
+        });
+        return res.status(HttpStatus.Ok).json({ accessToken: accToken });
+    } catch (e) {
+        // удалим только что созданную сессию
+        await deviceSessionsService.deleteSession(user._id.toString(), sessionDeviceId);
+        throw e;
+    }
 
     // return res.sendStatus(HttpStatus.NoContent);
 }

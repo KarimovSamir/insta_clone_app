@@ -3,6 +3,7 @@ import { HttpStatus } from '../../core/types/http-statuses';
 import { jwtService } from '../adapters/jwt.service';
 import { tokenBlacklistService } from '../application/token-blacklist.service';
 import { deviceSessionsService } from '../../device_sessions/application/device-sessions.service';
+import { RefreshPayload } from '../domain/jwt-payloads';
 
 export async function refreshTokenGuard(req: Request, res: Response, next: NextFunction) {
     // берём refreshToken из куки
@@ -19,7 +20,7 @@ export async function refreshTokenGuard(req: Request, res: Response, next: NextF
 
     // проверяем подписи и срок жизни токена
     const payload = await jwtService.verifyRefreshToken(refreshToken);
-    if (!payload || !payload.userId || !payload.exp || !payload.deviceId) {
+    if (!payload?.userId || !payload?.deviceId || !payload?.exp) {
         return res.sendStatus(HttpStatus.Unauthorized);
     }
 
@@ -29,10 +30,20 @@ export async function refreshTokenGuard(req: Request, res: Response, next: NextF
         return res.sendStatus(HttpStatus.Unauthorized);
     }
 
+    // проверка session.exp. парсим потому что первоначально строка
+    // Доп проверка, потому что у сессии и токена может быть разное время жизни
+    // И если даже токен ещё жив, то сессия уже может быть не рабочей
+    // Например если сессия должна вырубаться через 30 дней. 
+    // В момент когда сессия должна вырубиться, токен может обновиться
+    const expMs = Date.parse(session.exp);
+    if (Number.isFinite(expMs) && expMs < Date.now()) {
+        return res.sendStatus(HttpStatus.Unauthorized);
+    }
+
     // кладём данные в res.locals как и в случае с bearer
     // чтобы дальше хендлер мог ими пользоваться без повторной верификации
     res.locals.refreshToken = refreshToken;
-    res.locals.refreshPayload = payload;
+    res.locals.refreshPayload = payload as RefreshPayload;
 
     return next();
 }
