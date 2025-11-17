@@ -1,24 +1,20 @@
-import { Router } from "express";
-import { getBlogListHandler } from "./handlers/get-blog-list.handler";
-import { getBlogHandler } from "./handlers/get-blog-by-id.handler";
-import { createBlogHandler } from "./handlers/create-blog.handler";
-import { updateBlogByIdHandler } from "./handlers/update-blog.handler";
-import { deleteBlogHandler } from "./handlers/delete-blog.handler";
+import { Router } from 'express';
+import { query } from 'express-validator';
+import { appContainer } from '../../core/ioc/app.container';
+import { TYPES } from '../../core/ioc/types';
 import { idValidation } from '../../core/middlewares/validation/params-id.validation-middleware';
-import { inputValidationResultMiddleware } from "../../core/middlewares/validation/input-validtion-result.middleware";
+import { inputValidationResultMiddleware } from '../../core/middlewares/validation/input-validtion-result.middleware';
+import { paginationAndSortingValidation } from '../../core/middlewares/validation/query-pagination-sorting.validation-middleware';
+import { BlogSortField } from './input/blog-sort-field';
+import { blogCreateInputValidation, blogUpdateInputValidation } from './blog.input-dto.validation-middlewares';
+import { PostSortField } from '../../posts/routers/input/post-sort-field';
+import { postCreateByBlogInputDtoValidation } from '../../posts/routers/post.input-dto.validation-middlewares';
 import { superAdminGuardMiddleware } from '../../auth/middlewares/super-admin.guard-middleware';
-import { paginationAndSortingValidation } from "../../core/middlewares/validation/query-pagination-sorting.validation-middleware";
-import { BlogSortField } from "./input/blog-sort-field";
-import { blogCreateInputValidation, blogUpdateInputValidation } from "./blog.input-dto.validation-middlewares";
-import { getBlogPostListHandler } from "./handlers/get-blog-post-list.handler";
-import { query } from "express-validator";
-import { PostSortField } from "../../posts/routers/input/post-sort-field";
-import { createBlogPostByIdHandler } from "./handlers/create-blog-post-by-id.handle";
-import { postCreateByBlogInputDtoValidation } from "../../posts/routers/post.input-dto.validation-middlewares";
+import { BlogController } from '../controllers/blog.controller';
+
+const blogController = appContainer.get<BlogController>(TYPES.BlogController);
 
 export const blogRouter = Router({});
-
-// blogRouter.use(superAdminGuardMiddleware);
 
 blogRouter
     .get(
@@ -29,39 +25,39 @@ blogRouter
             .trim(),
         paginationAndSortingValidation(BlogSortField),
         inputValidationResultMiddleware,
-        getBlogListHandler,
+        blogController.getBlogList,
     )
 
     .get(
-        '/:id', 
-        idValidation, 
-        inputValidationResultMiddleware, 
-        getBlogHandler,
+        '/:id',
+        idValidation,
+        inputValidationResultMiddleware,
+        blogController.getBlogById,
     )
 
     .post(
-        '', 
+        '',
         superAdminGuardMiddleware,
-        blogCreateInputValidation, 
-        inputValidationResultMiddleware, 
-        createBlogHandler,
+        blogCreateInputValidation,
+        inputValidationResultMiddleware,
+        blogController.createBlog,
     )
 
     .put(
-        '/:id', 
+        '/:id',
         superAdminGuardMiddleware,
-        idValidation, 
-        blogUpdateInputValidation, 
-        inputValidationResultMiddleware, 
-        updateBlogByIdHandler,
+        idValidation,
+        blogUpdateInputValidation,
+        inputValidationResultMiddleware,
+        blogController.updateBlogById,
     )
 
     .delete(
-        '/:id', 
+        '/:id',
         superAdminGuardMiddleware,
-        idValidation, 
-        inputValidationResultMiddleware, 
-        deleteBlogHandler,
+        idValidation,
+        inputValidationResultMiddleware,
+        blogController.deleteBlogById,
     )
 
     .post(
@@ -70,7 +66,7 @@ blogRouter
         idValidation,
         postCreateByBlogInputDtoValidation,
         inputValidationResultMiddleware,
-        createBlogPostByIdHandler,
+        blogController.createBlogPost,
     )
 
     .get(
@@ -78,5 +74,5 @@ blogRouter
         idValidation,
         paginationAndSortingValidation(PostSortField),
         inputValidationResultMiddleware,
-        getBlogPostListHandler,
+        blogController.getBlogPostList,
     );

@@ -1,35 +1,39 @@
-import { Router } from "express";
-import { idValidation } from "../../core/middlewares/validation/params-id.validation-middleware";
-import { inputValidationResultMiddleware } from "../../core/middlewares/validation/input-validtion-result.middleware";
-import { getCommentHandler } from "./handlers/get-comment-by-id.handler";
-import { bearerAuthGuard } from "../../auth/middlewares/bearer-auth.guard-middleware";
-import { updateCommentByIdInputDtoValidation } from "./comment.input-dto.validation-middlewares";
-import { updateCommentByIdHandler } from "./handlers/update-comment.handler";
-import { deleteCommentHandler } from "./handlers/delete-blog.handler";
+import { Router } from 'express';
+import { appContainer } from '../../core/ioc/app.container';
+import { TYPES } from '../../core/ioc/types';
+import { idValidation } from '../../core/middlewares/validation/params-id.validation-middleware';
+import { inputValidationResultMiddleware } from '../../core/middlewares/validation/input-validtion-result.middleware';
+import { bearerAuthGuard } from '../../auth/middlewares/bearer-auth.guard-middleware';
+import { updateCommentByIdInputDtoValidation } from './comment.input-dto.validation-middlewares';
+import { CommentsController } from '../controllers/comments.controller';
 
 export const commentRouter = Router({});
 
+const commentsController = appContainer.get<CommentsController>(
+  TYPES.CommentsController,
+);
+
 commentRouter
     .get(
-        '/:id', 
-        idValidation, 
-        inputValidationResultMiddleware, 
-        getCommentHandler,
+        '/:id',
+        idValidation,
+        inputValidationResultMiddleware,
+        commentsController.getCommentById,
     )
 
     .put(
-        '/:id', 
+        '/:id',
         bearerAuthGuard,
-        idValidation, 
-        updateCommentByIdInputDtoValidation, 
-        inputValidationResultMiddleware, 
-        updateCommentByIdHandler,
+        idValidation,
+        updateCommentByIdInputDtoValidation,
+        inputValidationResultMiddleware,
+        commentsController.updateCommentById,
     )
 
     .delete(
-        '/:id', 
+        '/:id',
         bearerAuthGuard,
-        idValidation, 
-        inputValidationResultMiddleware, 
-        deleteCommentHandler,
+        idValidation,
+        inputValidationResultMiddleware,
+        commentsController.deleteCommentById,
     )

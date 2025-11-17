@@ -1,10 +1,18 @@
 import { NextFunction, Request, Response } from 'express';
 import { HttpStatus } from '../../core/types/http-statuses';
-import { jwtService } from '../adapters/jwt.service';
-import { userCollection } from '../../db/mongo.db';
-import { ObjectId } from 'mongodb';
+import { appContainer } from '../../core/ioc/app.container';
+import { TYPES } from '../../core/ioc/types';
+import { JwtService } from '../adapters/jwt.service';
+import { UserRepository } from '../../users/repositories/user.repository';
 
-export const bearerAuthGuard = async (req: Request, res: Response, next: NextFunction) => {
+const jwtService = appContainer.get<JwtService>(TYPES.JwtService);
+const userRepository = appContainer.get<UserRepository>(TYPES.UserRepository);
+
+export const bearerAuthGuard = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
     const auth = req.headers['authorization'];
     if (!auth || !auth.startsWith('Bearer ')) {
         return res.sendStatus(HttpStatus.Unauthorized);
@@ -17,7 +25,7 @@ export const bearerAuthGuard = async (req: Request, res: Response, next: NextFun
     }
 
     try {
-        const user = await userCollection.findOne({ _id: new ObjectId(payload.userId) });
+        const user = await userRepository.findUserByIdOrFail(payload.userId);
         if (!user) {
             return res.sendStatus(HttpStatus.Unauthorized);
         }

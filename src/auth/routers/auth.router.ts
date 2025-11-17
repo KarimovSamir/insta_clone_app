@@ -1,37 +1,39 @@
 import { Router } from 'express';
-import { loginHandler } from './handlers/login.handler';
 import { inputValidationResultMiddleware } from '../../core/middlewares/validation/input-validtion-result.middleware';
-import { authInputValidation, authRegistrationValidation, emailConfirmationValidation } from './auth.input-dto.validation-middlewares';
+import {
+  authInputValidation,
+  authRegistrationValidation,
+  emailConfirmationValidation,
+} from './auth.input-dto.validation-middlewares';
 import { bearerAuthGuard } from '../middlewares/bearer-auth.guard-middleware';
-import { currentUserHandler } from './handlers/current-user.handler';
-import { registrationMailHandler } from './handlers/registration-mail.handler';
-import { registrationConfirmationHandler } from './handlers/registration-confirmation.handler';
-import { registrationMailResendingHandler } from './handlers/registration-mail-resending.handler';
 import { refreshTokenGuard } from '../middlewares/refresh-token.guard-middleware';
-import { refreshTokenHandler } from './handlers/refresh-token.handler';
-import { logoutHandler } from './handlers/logout.handler';
 import { rateLimitAuthMiddleware } from '../middlewares/rate-limit-auth.middleware';
+import { appContainer } from '../../core/ioc/app.container';
+import { TYPES } from '../../core/ioc/types';
+import { AuthController } from '../controllers/auth.controller';
 
 export const authRouter = Router({});
+
+const authController = appContainer.get<AuthController>(TYPES.AuthController);
 
 authRouter.post(
     '/login',
     rateLimitAuthMiddleware,
     authInputValidation,
     inputValidationResultMiddleware,
-    loginHandler,
+    authController.login,
 );
 
 authRouter.post(
     '/refresh-token',
     refreshTokenGuard,
-    refreshTokenHandler,
+    authController.refreshToken,
 );
 
 authRouter.post(
     '/logout',
     refreshTokenGuard,
-    logoutHandler,
+    authController.logout,
 );
 
 authRouter.post(
@@ -39,13 +41,13 @@ authRouter.post(
     rateLimitAuthMiddleware,
     authRegistrationValidation,
     inputValidationResultMiddleware,
-    registrationMailHandler,
+    authController.registration,
 );
 
 authRouter.post(
     '/registration-confirmation',
     rateLimitAuthMiddleware,
-    registrationConfirmationHandler,
+    authController.registrationConfirmation,
 );
 
 authRouter.post(
@@ -53,11 +55,11 @@ authRouter.post(
     rateLimitAuthMiddleware,
     emailConfirmationValidation,
     inputValidationResultMiddleware,
-    registrationMailResendingHandler,
+    authController.registrationResend,
 );
 
 authRouter.get(
     '/me',
     bearerAuthGuard,
-    currentUserHandler,
+    authController.currentUser,
 );

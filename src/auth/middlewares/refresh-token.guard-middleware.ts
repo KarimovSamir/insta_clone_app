@@ -1,9 +1,19 @@
 import { NextFunction, Request, Response } from 'express';
 import { HttpStatus } from '../../core/types/http-statuses';
-import { jwtService } from '../adapters/jwt.service';
-import { tokenBlacklistService } from '../application/token-blacklist.service';
-import { deviceSessionsService } from '../../device_sessions/application/device-sessions.service';
+import { appContainer } from '../../core/ioc/app.container';
+import { TYPES } from '../../core/ioc/types';
+import { JwtService } from '../adapters/jwt.service';
+import { TokenBlacklistService } from '../application/token-blacklist.service';
+import { DeviceSessionsService } from '../../device_sessions/application/device-sessions.service';
 import { RefreshPayload } from '../domain/jwt-payloads';
+
+const jwtService = appContainer.get<JwtService>(TYPES.JwtService);
+const tokenBlacklistService = appContainer.get<TokenBlacklistService>(
+    TYPES.TokenBlacklistService,
+);
+const deviceSessionsService = appContainer.get<DeviceSessionsService>(
+    TYPES.DeviceSessionsService,
+);
 
 export async function refreshTokenGuard(req: Request, res: Response, next: NextFunction) {
     // берём refreshToken из куки

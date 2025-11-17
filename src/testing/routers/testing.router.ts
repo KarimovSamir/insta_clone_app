@@ -1,18 +1,12 @@
-import { Router, Request, Response } from "express";
-import { HttpStatus } from "../../core/types/http-statuses";
-import { blacklistRefTokenCollection, blogCollection, commentCollection, deviceSessionsCollection, postCollection, rateLimitCollection, userCollection } from "../../db/mongo.db";
+import { Router } from 'express';
+import { appContainer } from '../../core/ioc/app.container';
+import { TYPES } from '../../core/ioc/types';
+import { TestingController } from '../controllers/testing.controller';
 
 export const testingRouter = Router({});
 
-testingRouter.delete('/all-data', async (req: Request, res: Response) => {
-    await Promise.all([
-        postCollection.deleteMany(),
-        blogCollection.deleteMany(),
-        userCollection.deleteMany(),
-        commentCollection.deleteMany(),
-        blacklistRefTokenCollection.deleteMany(),
-        deviceSessionsCollection.deleteMany(),
-        rateLimitCollection.deleteMany(),
-    ]);
-    res.sendStatus(HttpStatus.NoContent);
-});
+const testingController = appContainer.get<TestingController>(
+  TYPES.TestingController,
+);
+
+testingRouter.delete('/all-data', testingController.deleteAllData);

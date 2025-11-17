@@ -31,8 +31,14 @@
 // }
 
 import { Request, Response, NextFunction } from "express";
-import { rateLimitService } from "../application/rate-limit.service";
 import { HttpStatus } from "../../core/types/http-statuses";
+import { appContainer } from "../../core/ioc/app.container";
+import { TYPES } from "../../core/ioc/types";
+import { RateLimitService } from "../application/rate-limit.service";
+
+const rateLimitService = appContainer.get<RateLimitService>(
+    TYPES.RateLimitService,
+);
 
 export async function rateLimitAuthMiddleware(req: Request, res: Response, next: NextFunction) {
     const ip = req.ip;

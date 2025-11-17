@@ -1,11 +1,19 @@
-import { tokenBlacklistRepository } from '../repositories/token-blacklist.repository';
+import { inject, injectable } from 'inversify';
+import { TYPES } from '../../core/ioc/types';
+import { TokenBlacklistRepository } from '../repositories/token-blacklist.repository';
 
-export const tokenBlacklistService = {
+@injectable()
+export class TokenBlacklistService {
+    constructor(
+        @inject(TYPES.TokenBlacklistRepository)
+        private readonly tokenBlacklistRepository: TokenBlacklistRepository,
+    ) {}
+
     async addRefTokenToBlacklist(token: string, exp: number): Promise<void> {
-        return tokenBlacklistRepository.addRefTokenToBlacklist(token, exp);
-    },
+        return this.tokenBlacklistRepository.addRefTokenToBlacklist(token, exp);
+    }
 
     async isBlacklisted(token: string): Promise<boolean> {
-        return tokenBlacklistRepository.isBlacklisted(token);
-    },
-};
+        return this.tokenBlacklistRepository.isBlacklisted(token);
+    }
+}

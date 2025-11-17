@@ -1,8 +1,10 @@
+import { injectable } from 'inversify';
 import { WithId } from 'mongodb';
 import { userCollection } from '../../db/mongo.db';
 import { User } from '../../users/domain/user';
 
-export const authRepository = {
+@injectable()
+export class AuthRepository {
     async findUserByLoginOrEmail(loginOrEmail: string): Promise<WithId<User> | null> {
         return userCollection.findOne({
             $or: [
@@ -10,5 +12,5 @@ export const authRepository = {
                 { email: loginOrEmail.toLowerCase() },
             ],
         });
-    },
-};
+    }
+}

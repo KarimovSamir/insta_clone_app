@@ -1,26 +1,30 @@
-import { Router } from "express";
-import { refreshTokenGuard } from "../../auth/middlewares/refresh-token.guard-middleware";
-import { getDeviceSessionsHandler } from "./handlers/get-device-sessions.handler";
-import { deleteOtherDeviceSessionsHandler } from "./handlers/delete-other-device-sessions.handler";
-import { deleteDeviceSessionByIdHandler } from "./handlers/delete-device-session-by-id.handler";
+import { Router } from 'express';
+import { refreshTokenGuard } from '../../auth/middlewares/refresh-token.guard-middleware';
+import { appContainer } from '../../core/ioc/app.container';
+import { TYPES } from '../../core/ioc/types';
+import { DeviceSessionsController } from '../controllers/device-sessions.controller';
 
 export const deviceSessionsRouter = Router({});
 
+const deviceSessionsController = appContainer.get<DeviceSessionsController>(
+  TYPES.DeviceSessionsController,
+);
+
 deviceSessionsRouter
     .get(
-        '/', 
-        refreshTokenGuard, 
-        getDeviceSessionsHandler,
-    )
-
-    .delete(
-        '/', 
+        '/',
         refreshTokenGuard,
-        deleteOtherDeviceSessionsHandler,
+        deviceSessionsController.getDeviceSessions,
     )
 
     .delete(
-        '/:deviceId', 
-        refreshTokenGuard, 
-        deleteDeviceSessionByIdHandler,
+        '/',
+        refreshTokenGuard,
+        deviceSessionsController.deleteOtherSessions,
+    )
+
+    .delete(
+        '/:deviceId',
+        refreshTokenGuard,
+        deviceSessionsController.deleteSessionById,
     )

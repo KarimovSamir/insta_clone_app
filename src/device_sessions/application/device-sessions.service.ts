@@ -1,8 +1,16 @@
-import { DeviceSession } from "../domain/device-session";
-import { deviceSessionsRepository } from "../repositories/device-sessions.repository";
-import { DeviceSessionAttributes } from "./dtos/device-session-attributes";
+import { inject, injectable } from 'inversify';
+import { TYPES } from '../../core/ioc/types';
+import { DeviceSessionsRepository } from '../repositories/device-sessions.repository';
+import { DeviceSession } from '../domain/device-session';
+import { DeviceSessionAttributes } from './dtos/device-session-attributes';
 
-export const deviceSessionsService = {
+@injectable()
+export class DeviceSessionsService {
+    constructor(
+        @inject(TYPES.DeviceSessionsRepository)
+        private readonly deviceSessionsRepository: DeviceSessionsRepository,
+    ) {}
+
     async createSession(dto: DeviceSessionAttributes): Promise<void> {
         const newSession: DeviceSession = {
             userId: dto.userId,
@@ -13,20 +21,20 @@ export const deviceSessionsService = {
             exp: dto.exp,
         };
 
-        return deviceSessionsRepository.createSession(newSession);
-    },
+        await this.deviceSessionsRepository.createSession(newSession);
+    }
 
     async findSession(userId: string, deviceId: string): Promise<DeviceSession | null> {
-        return deviceSessionsRepository.findSession(userId, deviceId);
-    },
+        return this.deviceSessionsRepository.findSession(userId, deviceId);
+    }
 
     async findSessionsByUserId(userId: string): Promise<DeviceSession[]> {
-        return deviceSessionsRepository.findSessionsByUserId(userId);
-    },
+        return this.deviceSessionsRepository.findSessionsByUserId(userId);
+    }
 
     async deleteSession(userId: string, deviceId: string): Promise<boolean> {
-        return deviceSessionsRepository.deleteSession(userId, deviceId);
-    },
+        return this.deviceSessionsRepository.deleteSession(userId, deviceId);
+    }
 
     async updateSession(
         userId: string,
@@ -34,16 +42,22 @@ export const deviceSessionsService = {
         lastActiveDate: string,
         exp: string,
     ): Promise<boolean> {
-        return deviceSessionsRepository.updateSession(userId, deviceId, lastActiveDate, exp);
-    },
+        return this.deviceSessionsRepository.updateSession(
+            userId,
+            deviceId,
+            lastActiveDate,
+            exp,
+        );
+    }
 
     async deleteAllSessionsExcept(userId: string, deviceIdToKeep: string): Promise<void> {
-        return deviceSessionsRepository.deleteAllSessionsExcept(userId, deviceIdToKeep);
-    },
+        await this.deviceSessionsRepository.deleteAllSessionsExcept(
+            userId,
+            deviceIdToKeep,
+        );
+    }
 
-    // для проверки чужой/не чужой девайс
     async findByDeviceId(deviceId: string): Promise<DeviceSession | null> {
-        return deviceSessionsRepository.findByDeviceId(deviceId);
-    },
-
+        return this.deviceSessionsRepository.findByDeviceId(deviceId);
+    }
 }

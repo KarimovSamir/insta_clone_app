@@ -1,25 +1,43 @@
+import { inject, injectable } from 'inversify';
+import { randomUUID } from 'crypto';
 import { RepositoryBadRequestError } from '../../core/errors/repository-bad-request.error';
+import { TYPES } from '../../core/ioc/types';
 import { SETTINGS } from '../../core/settings/settings';
-import { usersService } from '../../users/application/users.service';
-import { usersRepository } from '../../users/repositories/user.repository';
-import { bcryptService } from '../adapters/bcrypt.service';
-import { mailer } from '../adapters/resend.mailer';
-import { authRepository } from '../repositories/auth.repository';
+import { UsersService } from '../../users/application/users.service';
+import { UserRepository } from '../../users/repositories/user.repository';
+import { BcryptService } from '../adapters/bcrypt.service';
+import { MailerService } from '../adapters/resend.mailer';
+import { AuthRepository } from '../repositories/auth.repository';
 import { AuthAttributes } from './dtos/auth-attributes';
 import { RegistrationAttributes } from './dtos/registration-attributes';
-import { randomUUID } from 'crypto';
 
-export const authService = {
+@injectable()
+export class AuthService {
+    constructor(
+        @inject(TYPES.AuthRepository)
+        private readonly authRepository: AuthRepository,
+        @inject(TYPES.UsersService)
+        private readonly usersService: UsersService,
+        @inject(TYPES.UserRepository)
+        private readonly userRepository: UserRepository,
+        @inject(TYPES.BcryptService)
+        private readonly bcryptService: BcryptService,
+        @inject(TYPES.MailerService)
+        private readonly mailer: MailerService,
+    ) {}
+
     async validateCredentials(dto: AuthAttributes): Promise<boolean> {
-        const user = await authRepository.findUserByLoginOrEmail(dto.loginOrEmail);
+        const user = await this.authRepository.findUserByLoginOrEmail(
+            dto.loginOrEmail,
+        );
         if (!user) {
             return false;
         }
-        return bcryptService.checkPassword(dto.password, user.passwordHash);
-    },
+        return this.bcryptService.checkPassword(dto.password, user.passwordHash);
+    }
 
     async registerMail(dto: RegistrationAttributes): Promise<void> {
-        await usersService.createUser({
+        await this.usersService.createUser({
             login: dto.login.trim(),
             password: dto.password,
             email: dto.email.trim().toLowerCase(),
@@ -28,17 +46,16 @@ export const authService = {
         const code = randomUUID();
         const now = Date.now();
         const email = dto.email.trim().toLowerCase();
-        await usersRepository.setEmailConfirmationByEmail(email, {
+        await this.userRepository.setEmailConfirmationByEmail(email, {
             confirmationCode: code,
-            // 15 минут
             expirationDate: new Date(now + 15 * 60 * 1000).toISOString(),
             isConfirmed: false,
         });
 
-        const confirmLink = `${SETTINGS.FRONTEND_CONFIRM_URL}?code=${encodeURIComponent(code)}`;
-        // console.log('[mail] env_key?', !!process.env.RESEND_API_KEY, 'settings_key?', !!SETTINGS.RESEND_API_KEY);
-        await mailer.send({
-            // to: dto.email.trim().toLowerCase(),
+        const confirmLink = `${SETTINGS.FRONTEND_CONFIRM_URL}?code=${encodeURIComponent(
+            code,
+        )}`;
+        await this.mailer.send({
             to: email,
             subject: 'Confirm your registration',
             html: `
@@ -48,30 +65,22 @@ export const authService = {
                 </p>
             `,
         });
-
-        return;
-    },
+    }
 
     async resendingMail(userEmail: string): Promise<void> {
-        // await usersService.createUser({
-        //     login: dto.login.trim(),
-        //     password: dto.password,
-        //     email: dto.email.trim().toLowerCase(),
-        // });
-
         const code = randomUUID();
         const now = Date.now();
         const email = userEmail.trim().toLowerCase();
-        await usersRepository.setEmailConfirmationByEmail(email, {
+        await this.userRepository.setEmailConfirmationByEmail(email, {
             confirmationCode: code,
-            // 15 минут
             expirationDate: new Date(now + 15 * 60 * 1000).toISOString(),
             isConfirmed: false,
         });
 
-        const confirmLink = `${SETTINGS.FRONTEND_CONFIRM_URL}?code=${encodeURIComponent(code)}`;
-        // console.log('[mail] env_key?', !!process.env.RESEND_API_KEY, 'settings_key?', !!SETTINGS.RESEND_API_KEY);
-        await mailer.send({
+        const confirmLink = `${SETTINGS.FRONTEND_CONFIRM_URL}?code=${encodeURIComponent(
+            code,
+        )}`;
+        await this.mailer.send({
             to: email,
             subject: 'Confirm your registration',
             html: `
@@ -81,12 +90,10 @@ export const authService = {
                 </p>
             `,
         });
-
-        return;
-    },
+    }
 
     async confirmByCode(code: string): Promise<void> {
-        const user = await usersRepository.findByConfirmationCode(code);
+        const user = await this.userRepository.findByConfirmationCode(code);
         if (!user || !user.emailConfirmation) {
             throw new RepositoryBadRequestError('Invalid or expired code', 'code');
         }
@@ -97,8 +104,6 @@ export const authService = {
         if (!Number.isFinite(exp) || exp <= Date.now()) {
             throw new RepositoryBadRequestError('Invalid or expired code', 'code');
         }
-        await usersRepository.confirmUserById(user._id.toString());
-        return;
-    },
-
-};
+        await this.userRepository.confirmUserById(user._id.toString());
+    }
+}

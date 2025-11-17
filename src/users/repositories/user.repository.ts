@@ -1,11 +1,13 @@
-import { userCollection } from '../../db/mongo.db';
+import { injectable } from 'inversify';
 import { Filter, ObjectId, WithId } from 'mongodb';
-import { RepositoryNotFoundError } from "../../core/errors/repository-not-found.error";
-import { UserQueryInput } from '../routers/input/user-query.input';
-import { User, EmailConfirmation } from '../domain/user';
+import { userCollection } from '../../db/mongo.db';
 import { RepositoryBadRequestError } from '../../core/errors/repository-bad-request.error';
+import { RepositoryNotFoundError } from '../../core/errors/repository-not-found.error';
+import { EmailConfirmation, User } from '../domain/user';
+import { UserQueryInput } from '../routers/input/user-query.input';
 
-export const usersRepository = {
+@injectable()
+export class UserRepository {
     async findUsers(
         queryDto: UserQueryInput,
     ): Promise<{ items: WithId<User>[]; totalCount: number }> {
@@ -54,7 +56,7 @@ export const usersRepository = {
         const totalCount = await userCollection.countDocuments(filter);
 
         return { items, totalCount };
-    },
+    }
 
     async findUserByIdOrFail(id: string): Promise<WithId<User>> {
         const res = await userCollection.findOne({ _id: new ObjectId(id) });
@@ -63,7 +65,7 @@ export const usersRepository = {
             throw new RepositoryNotFoundError('User not exist');
         }
         return res;
-    },
+    }
 
     async createUser(newUser: User): Promise<string> {
         const login = newUser.login.trim();
@@ -87,7 +89,7 @@ export const usersRepository = {
 
         const insertResult = await userCollection.insertOne({ ...newUser, login, email });
         return insertResult.insertedId.toString();
-    },
+    }
 
     async deleteUserById(id: string): Promise<void> {
         const deleteResult = await userCollection.deleteOne({
@@ -97,19 +99,18 @@ export const usersRepository = {
         if (deleteResult.deletedCount < 1) {
             throw new RepositoryNotFoundError('User not exist');
         }
-        return;
-    },
+    }
 
     async setEmailConfirmationByEmail(email: string, emailConfirmation: EmailConfirmation): Promise<void> {
         await userCollection.updateOne(
             { email: email.trim().toLowerCase() },
             { $set: { emailConfirmation } }
         );
-    },
+    }
 
     async findByConfirmationCode(code: string): Promise<WithId<User> | null> {
         return userCollection.findOne({ 'emailConfirmation.confirmationCode': code });
-    },
+    }
 
     async confirmUserById(id: string): Promise<void> {
         const res = await userCollection.updateOne(
@@ -122,6 +123,5 @@ export const usersRepository = {
         if (res.matchedCount < 1) {
             throw new RepositoryNotFoundError('User not exist');
         }
-    },
-
+    }
 }

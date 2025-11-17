@@ -30,25 +30,37 @@
 //     },
 // };
 
-import { rateLimitRepository } from "../repositories/rate-limit.repository";
+import { inject, injectable } from 'inversify';
+import { TYPES } from '../../core/ioc/types';
+import { RateLimitRepository } from '../repositories/rate-limit.repository';
 
 const WINDOW_MS = 10_000;
 const MAX_REQUESTS = 5;
 
-export const rateLimitService = {
-    WINDOW_MS,
-    MAX_REQUESTS,
+@injectable()
+export class RateLimitService {
+    public readonly windowMs = WINDOW_MS;
+    public readonly maxRequests = MAX_REQUESTS;
 
-    // Вернёт false, если нужно ответить 429 (и запись НЕ добавит)
+    constructor(
+        @inject(TYPES.RateLimitRepository)
+        private readonly rateLimitRepository: RateLimitRepository,
+    ) {}
+
     async check(ip: string, url: string): Promise<boolean> {
         const now = new Date();
-        const windowStart = new Date(now.getTime() - WINDOW_MS);
+        const windowStart = new Date(now.getTime() - this.windowMs);
 
-        const count = await rateLimitRepository.countRequests(ip, url, windowStart);
-        return count < MAX_REQUESTS; // строго меньше: 0..4 → ок, 5-й → ок, 6-й → стоп
-    },
+        const count = await this.rateLimitRepository.countRequests(
+            ip,
+            url,
+            windowStart,
+        );
+
+        return count < this.maxRequests;
+    }
 
     async addRecord(ip: string, url: string): Promise<void> {
-        await rateLimitRepository.addRecord({ ip, url, date: new Date() });
-    },
-};
+        await this.rateLimitRepository.addRecord({ ip, url, date: new Date() });
+    }
+}

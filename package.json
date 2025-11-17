@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "watch": "tsc -w",
     "dev": "nodemon --inspect dist/index.js",
     "jest": "jest -i",
@@ -21,8 +21,10 @@
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
     "express-validator": "^7.2.1",
+    "inversify": "^6.1.6",
     "jsonwebtoken": "^9",
     "mongodb": "^6.20.0",
+    "reflect-metadata": "^0.2.2",
     "resend": "^6.2.2",
     "uuid": "^13.0.0"
   },

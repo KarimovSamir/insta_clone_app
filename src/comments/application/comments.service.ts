@@ -1,62 +1,74 @@
-import { WithId } from "mongodb";
-import { postsRepository } from "../../posts/repositories/post.repository";
-import { Comment } from "../domain/comment";
-import { CommentQueryInput } from "../routers/input/comment-query.input";
-import { commentsRepository } from "../repositories/comment.repository";
-import { CommentAttributes } from "./dtos/comment-attributes";
-import { RepositoryForbiddenError } from "../../core/errors/repository-forbidden.error";
+import { inject, injectable } from 'inversify';
+import { WithId } from 'mongodb';
+import { TYPES } from '../../core/ioc/types';
+import { RepositoryForbiddenError } from '../../core/errors/repository-forbidden.error';
+import { PostsService } from '../../posts/application/posts.service';
+import { CommentRepository } from '../repositories/comment.repository';
+import { Comment } from '../domain/comment';
+import { CommentQueryInput } from '../routers/input/comment-query.input';
+import { CommentAttributes } from './dtos/comment-attributes';
+
 type CurrentUser = { _id: any; login: string; email: string; createdAt: string };
 
-export const commentsService = {
-    async findCommentsByPost(
-        queryDto: CommentQueryInput,
-        postId: string,
-    ): Promise<{ items: WithId<Comment>[]; totalCount: number }> {
-        await postsRepository.findPostByIdOrFail(postId);
+@injectable()
+export class CommentsService {
+  constructor(
+    @inject(TYPES.CommentRepository)
+    private readonly commentsRepository: CommentRepository,
+    @inject(TYPES.PostsService)
+    private readonly postsService: PostsService,
+  ) {}
 
-        return commentsRepository.findCommentsByPost(queryDto, postId);
-    },
+  async findCommentsByPost(
+    queryDto: CommentQueryInput,
+    postId: string,
+  ): Promise<{ items: WithId<Comment>[]; totalCount: number }> {
+    await this.postsService.findPostByIdOrFail(postId);
 
-    async findCommentByIdOrFail(id: string): Promise<WithId<Comment>> {
-        return commentsRepository.findCommentByIdOrFail(id);
-    },
+    return this.commentsRepository.findCommentsByPost(queryDto, postId);
+  }
 
-    async createCommentWithUrlPostId (
-        postIdUrl:string, 
-        dto: CommentAttributes,
-        user: CurrentUser
-    ): Promise<string> {
-        const post = await postsRepository.findPostByIdOrFail(postIdUrl);
+  async findCommentByIdOrFail(id: string): Promise<WithId<Comment>> {
+    return this.commentsRepository.findCommentByIdOrFail(id);
+  }
 
-        const newComment: Comment = {
-            postId: post._id.toString(),
-            content: dto.content,
-            commentatorInfo: {
-                userId: user._id.toString(),
-                userLogin: user.login,
-            },
-            createdAt: new Date().toISOString(),
-        }
+  async createCommentWithUrlPostId(
+    postIdUrl: string,
+    dto: CommentAttributes,
+    user: CurrentUser,
+  ): Promise<string> {
+    const post = await this.postsService.findPostByIdOrFail(postIdUrl);
 
-        return await commentsRepository.createComment(newComment);;
-    },
+    const newComment: Comment = {
+      postId: post._id.toString(),
+      content: dto.content,
+      commentatorInfo: {
+        userId: user._id.toString(),
+        userLogin: user.login,
+      },
+      createdAt: new Date().toISOString(),
+    };
 
-    async deleteComment(id: string, user: CurrentUser): Promise <void> {
-        // await commentsRepository.deleteCommentById(id);
-        // return;
-        const comment = await commentsRepository.findCommentByIdOrFail(id); // 404 если нет
-        if (comment.commentatorInfo.userId !== user._id.toString()) {
-            throw new RepositoryForbiddenError('You can delete only your own comments'); // 403
-        }
-        await commentsRepository.deleteCommentById(id); // 204
-    },
+    return this.commentsRepository.createComment(newComment);
+  }
 
-    async updateComment(id: string, dto: CommentAttributes, user: CurrentUser): Promise <void> {
-        // debugger;
-        const comment = await commentsRepository.findCommentByIdOrFail(id); // 404 если нет
-        if (comment.commentatorInfo.userId !== user._id.toString()) {
-            throw new RepositoryForbiddenError('You can update only your own comments'); // 403
-        }
-        await commentsRepository.updateCommentById(id, dto);
-    },
+  async deleteComment(id: string, user: CurrentUser): Promise<void> {
+    const comment = await this.commentsRepository.findCommentByIdOrFail(id);
+    if (comment.commentatorInfo.userId !== user._id.toString()) {
+      throw new RepositoryForbiddenError('You can delete only your own comments');
+    }
+    await this.commentsRepository.deleteCommentById(id);
+  }
+
+  async updateComment(
+    id: string,
+    dto: CommentAttributes,
+    user: CurrentUser,
+  ): Promise<void> {
+    const comment = await this.commentsRepository.findCommentByIdOrFail(id);
+    if (comment.commentatorInfo.userId !== user._id.toString()) {
+      throw new RepositoryForbiddenError('You can update only your own comments');
+    }
+    await this.commentsRepository.updateCommentById(id, dto);
+  }
 }

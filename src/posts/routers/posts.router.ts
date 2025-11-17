@@ -1,38 +1,37 @@
-import { Router } from "express";
-import { getPostListHandler } from "./handlers/get-post-list.handler";
-import { getPostByIdHandler } from "./handlers/get-post-by-id.handler";
-import { createPostHandler } from "./handlers/create-post.handler";
-import { updatePostByIdHandler } from "./handlers/update-post.handler";
-import { deletePostHandler } from "./handlers/delete-post.handler";
-import { idValidation } from '../../core/middlewares/validation/params-id.validation-middleware';
-import { inputValidationResultMiddleware } from "../../core/middlewares/validation/input-validtion-result.middleware";
+import { Router } from 'express';
+import { appContainer } from '../../core/ioc/app.container';
+import { TYPES } from '../../core/ioc/types';
+import { bearerAuthGuard } from '../../auth/middlewares/bearer-auth.guard-middleware';
 import { superAdminGuardMiddleware } from '../../auth/middlewares/super-admin.guard-middleware';
-import { paginationAndSortingValidation } from "../../core/middlewares/validation/query-pagination-sorting.validation-middleware";
-import { PostSortField } from "./input/post-sort-field";
-import { postCreateInputDtoValidation, postUpdateInputDtoValidation } from "./post.input-dto.validation-middlewares";
-import { createPostCommentByIdHandler } from "./handlers/create-post-comment-by-id.handler";
-import { bearerAuthGuard } from "../../auth/middlewares/bearer-auth.guard-middleware";
-import { createPostCommentByIdInputDtoValidation } from "../../comments/routers/comment.input-dto.validation-middlewares";
-import { getPostAllCommentsByIdHandler } from "./handlers/get-post-allComments-by-postId.handler";
-import { CommentSortField } from "../../comments/routers/input/comment-sort-field";
+import { idValidation } from '../../core/middlewares/validation/params-id.validation-middleware';
+import { inputValidationResultMiddleware } from '../../core/middlewares/validation/input-validtion-result.middleware';
+import { paginationAndSortingValidation } from '../../core/middlewares/validation/query-pagination-sorting.validation-middleware';
+import { createPostCommentByIdInputDtoValidation } from '../../comments/routers/comment.input-dto.validation-middlewares';
+import { CommentSortField } from '../../comments/routers/input/comment-sort-field';
+import { PostsController } from '../controllers/posts.controller';
+import { PostSortField } from './input/post-sort-field';
+import {
+  postCreateInputDtoValidation,
+  postUpdateInputDtoValidation,
+} from './post.input-dto.validation-middlewares';
 
 export const postRouter = Router({});
 
-// postRouter.use(superAdminGuardMiddleware);
+const postsController = appContainer.get<PostsController>(TYPES.PostsController);
 
 postRouter
     .get(
         '', 
         paginationAndSortingValidation(PostSortField),
         inputValidationResultMiddleware,
-        getPostListHandler,
+        postsController.getPostList,
     )
 
     .get(
         '/:id', 
         idValidation, 
         inputValidationResultMiddleware, 
-        getPostByIdHandler,
+        postsController.getPostById,
     )
 
     .post(
@@ -40,7 +39,7 @@ postRouter
         superAdminGuardMiddleware,
         postCreateInputDtoValidation, 
         inputValidationResultMiddleware, 
-        createPostHandler,
+        postsController.createPost,
     )
 
     .put(
@@ -49,7 +48,7 @@ postRouter
         idValidation, 
         postUpdateInputDtoValidation, 
         inputValidationResultMiddleware, 
-        updatePostByIdHandler,
+        postsController.updatePostById,
     )
 
     .delete(
@@ -57,7 +56,7 @@ postRouter
         superAdminGuardMiddleware,
         idValidation, 
         inputValidationResultMiddleware, 
-        deletePostHandler,
+        postsController.deletePostById,
     )
 
     .post(
@@ -66,7 +65,7 @@ postRouter
         idValidation, 
         createPostCommentByIdInputDtoValidation,
         inputValidationResultMiddleware, 
-        createPostCommentByIdHandler,
+        postsController.createPostComment,
     )
 
     .get(
@@ -74,5 +73,5 @@ postRouter
         idValidation, 
         paginationAndSortingValidation(CommentSortField),
         inputValidationResultMiddleware, 
-        getPostAllCommentsByIdHandler,
+        postsController.getPostComments,
     )

@@ -1,17 +1,19 @@
-import jwt from "jsonwebtoken";
-import { SETTINGS } from "../../core/settings/settings";
-import { AccessPayload, RefreshPayload } from "../domain/jwt-payloads";
+import { injectable } from 'inversify';
+import jwt from 'jsonwebtoken';
+import { SETTINGS } from '../../core/settings/settings';
+import { AccessPayload, RefreshPayload } from '../domain/jwt-payloads';
 
-export const jwtService = {
+@injectable()
+export class JwtService {
     async createAccessToken(userId: string): Promise<string> {
         const payload: AccessPayload = { userId };
         return jwt.sign(payload, SETTINGS.AC_SECRET, { expiresIn: SETTINGS.AC_TIME });
-    },
+    }
 
     async createRefreshToken(userId: string, deviceId: string): Promise<string> {
         const payload: RefreshPayload = { userId, deviceId };
         return jwt.sign(payload, SETTINGS.RT_SECRET, { expiresIn: SETTINGS.RT_TIME });
-    },
+    }
 
     async decodeToken(token: string): Promise<unknown> {
         try {
@@ -19,7 +21,7 @@ export const jwtService = {
         } catch {
             return null;
         }
-    },
+    }
 
     async verifyAccessToken(token: string): Promise<AccessPayload | null> {
         try {
@@ -27,7 +29,7 @@ export const jwtService = {
         } catch {
             return null;
         }
-    },
+    }
 
     async verifyRefreshToken(token: string): Promise<RefreshPayload | null> {
         try {
@@ -35,5 +37,5 @@ export const jwtService = {
         } catch {
             return null;
         }
-    },
-};
+    }
+}

@@ -1,16 +1,18 @@
-import { Router } from "express";
-import { query } from "express-validator";
-import { paginationAndSortingValidation } from "../../core/middlewares/validation/query-pagination-sorting.validation-middleware";
-import { UserSortField } from "./input/user-sort-field";
-import { inputValidationResultMiddleware } from "../../core/middlewares/validation/input-validtion-result.middleware";
-import { getUserListHandler } from "./handlers/get-user-list.handler";
-import { superAdminGuardMiddleware } from "../../auth/middlewares/super-admin.guard-middleware";
-import { userCreateInputValidation } from "./user.input-dto.validation-middlewares";
-import { createUserHandler } from "./handlers/create-user.handler";
-import { idValidation } from "../../core/middlewares/validation/params-id.validation-middleware";
-import { deleteUserHandler } from "./handlers/delete-user.handler";
+import { Router } from 'express';
+import { query } from 'express-validator';
+import { appContainer } from '../../core/ioc/app.container';
+import { TYPES } from '../../core/ioc/types';
+import { idValidation } from '../../core/middlewares/validation/params-id.validation-middleware';
+import { inputValidationResultMiddleware } from '../../core/middlewares/validation/input-validtion-result.middleware';
+import { paginationAndSortingValidation } from '../../core/middlewares/validation/query-pagination-sorting.validation-middleware';
+import { superAdminGuardMiddleware } from '../../auth/middlewares/super-admin.guard-middleware';
+import { UsersController } from '../controllers/users.controller';
+import { UserSortField } from './input/user-sort-field';
+import { userCreateInputValidation } from './user.input-dto.validation-middlewares';
 
 export const userRouter = Router({});
+
+const usersController = appContainer.get<UsersController>(TYPES.UsersController);
 
 userRouter
     .get(
@@ -26,7 +28,7 @@ userRouter
             .trim(),
         paginationAndSortingValidation(UserSortField),
         inputValidationResultMiddleware,
-        getUserListHandler,
+        usersController.getUserList,
     )
 
     .post(
@@ -34,7 +36,7 @@ userRouter
         superAdminGuardMiddleware,
         userCreateInputValidation,
         inputValidationResultMiddleware,
-        createUserHandler,
+        usersController.createUser,
     )
 
     .delete(
@@ -42,5 +44,5 @@ userRouter
         superAdminGuardMiddleware,
         idValidation,
         inputValidationResultMiddleware,
-        deleteUserHandler,
+        usersController.deleteUserById,
     );

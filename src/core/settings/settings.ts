@@ -1,4 +1,6 @@
 export const SETTINGS = {
+  ADMIN_LOGIN: 'admin',
+  ADMIN_PASSWORD: 'qwerty',
   PORT: process.env.PORT || 5001,
   MONGO_URL: process.env.MONGO_URL || 'mongodb://localhost:27017/instaCloneApp',
   DB_NAME: process.env.DB_NAME || 'instaCloneApp',
