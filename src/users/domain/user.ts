@@ -6,10 +6,16 @@ export type EmailConfirmation = {
     isConfirmed: boolean;
 };
 
+export type MailPasswordRecovery = {
+    recoveryCode: string,
+    expirationDate: string
+};
+
 export type User = {
     login: string,
     passwordHash: string,
     email: string,
     createdAt: string,
-    emailConfirmation?: EmailConfirmation;
+    emailConfirmation?: EmailConfirmation,
+    mailPasswordRecovery?: MailPasswordRecovery
 };

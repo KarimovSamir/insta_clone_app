@@ -4,6 +4,7 @@ import {
   authInputValidation,
   authRegistrationValidation,
   emailConfirmationValidation,
+  newEmailPasswordInputValidation,
 } from './auth.input-dto.validation-middlewares';
 import { bearerAuthGuard } from '../middlewares/bearer-auth.guard-middleware';
 import { refreshTokenGuard } from '../middlewares/refresh-token.guard-middleware';
@@ -62,4 +63,20 @@ authRouter.get(
     '/me',
     bearerAuthGuard,
     authController.currentUser,
+);
+
+authRouter.post(
+    '/new-password',
+    rateLimitAuthMiddleware,
+    newEmailPasswordInputValidation,
+    inputValidationResultMiddleware,
+    authController.emailNewPassword,
+);
+
+authRouter.post(
+    '/password-recovery',
+    rateLimitAuthMiddleware,
+    emailConfirmationValidation,
+    inputValidationResultMiddleware,
+    authController.emailPasswordRecovery,
 );

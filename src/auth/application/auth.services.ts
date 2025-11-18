@@ -10,6 +10,8 @@ import { MailerService } from '../adapters/resend.mailer';
 import { AuthRepository } from '../repositories/auth.repository';
 import { AuthAttributes } from './dtos/auth-attributes';
 import { RegistrationAttributes } from './dtos/registration-attributes';
+import { EmailPasswordRecoveryAttributes } from './dtos/email-password-rec-attributes';
+import { NewEmailPasswordRecoveryAttributes } from './dtos/new-email-password-rec-attributes';
 
 @injectable()
 export class AuthService {
@@ -24,7 +26,7 @@ export class AuthService {
         private readonly bcryptService: BcryptService,
         @inject(TYPES.MailerService)
         private readonly mailer: MailerService,
-    ) {}
+    ) { }
 
     async validateCredentials(dto: AuthAttributes): Promise<boolean> {
         const user = await this.authRepository.findUserByLoginOrEmail(
@@ -106,4 +108,55 @@ export class AuthService {
         }
         await this.userRepository.confirmUserById(user._id.toString());
     }
+
+    async emailPasswordRecovery(dto: EmailPasswordRecoveryAttributes): Promise<boolean> {
+        const user = await this.authRepository.findUserByLoginOrEmail(
+            dto.email,
+        );
+        if (!user) {
+            return false;
+        };
+
+        const newRecoveryCode = randomUUID();
+        const now = Date.now();
+        const email = dto.email.trim().toLowerCase();
+
+        await this.userRepository.setPasswordRecoveryData(email, {
+            recoveryCode: newRecoveryCode,
+            expirationDate: new Date(now + 15 * 60 * 1000).toISOString(),
+        });
+
+        const confirmLink = `${SETTINGS.FRONTEND_RECOVERY_CODE_URL}?recoveryCode=${encodeURIComponent(
+            newRecoveryCode,
+        )}`;
+        await this.mailer.send({
+            to: email,
+            subject: 'Confirm your password recovery',
+            html: `
+                <h1>Password recovery</h1>
+                <p>To finish password recovery please follow the link below:
+                <a href="${confirmLink}">recovery password</a>
+                </p>
+            `,
+        });
+
+        return true;
+    }
+
+    async newEmailPassword(dto: NewEmailPasswordRecoveryAttributes): Promise<void> {
+        const user = await this.userRepository.findByRecoveryCode(dto.recoveryCode);
+
+        if (!user || !user.mailPasswordRecovery) {
+            throw new RepositoryBadRequestError('Invalid or expired recovery code', 'recoveryCode');
+        }
+        const exp = new Date(user.mailPasswordRecovery.expirationDate).getTime();
+        if (!Number.isFinite(exp) || exp <= Date.now()) {
+            throw new RepositoryBadRequestError('Invalid or expired recovery code', 'recoveryCode');
+        }
+
+        const newPasswordHash = await this.bcryptService.generateHash(dto.newPassword);
+        await this.userRepository.updateMailPasswordByIdAndClearRecovery(user._id.toString(), newPasswordHash);
+    }
+
+
 }

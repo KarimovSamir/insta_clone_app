@@ -3,7 +3,7 @@ import { Filter, ObjectId, WithId } from 'mongodb';
 import { userCollection } from '../../db/mongo.db';
 import { RepositoryBadRequestError } from '../../core/errors/repository-bad-request.error';
 import { RepositoryNotFoundError } from '../../core/errors/repository-not-found.error';
-import { EmailConfirmation, User } from '../domain/user';
+import { EmailConfirmation, MailPasswordRecovery, User } from '../domain/user';
 import { UserQueryInput } from '../routers/input/user-query.input';
 
 @injectable()
@@ -23,20 +23,12 @@ export class UserRepository {
         const skip = (pageNumber - 1) * pageSize;
         const filter: Filter<User> = {};
 
-        // if (searchLoginTerm) {
-        //     filter.login = { $regex: searchLoginTerm, $options: 'i' };
-        // }
-
         const loginFilter = searchLoginTerm
             ? { login: { $regex: searchLoginTerm, $options: 'i' } }
             : null;
         const emailFilter = searchEmailTerm
             ? { email: { $regex: searchEmailTerm, $options: 'i' } }
             : null;
-
-        // if (searchEmailTerm) {
-        //     filter.email = { $regex: searchEmailTerm, $options: 'i' };
-        // }
 
         if (loginFilter && emailFilter) {
             filter.$or = [loginFilter, emailFilter];
@@ -118,6 +110,35 @@ export class UserRepository {
             {
                 $set: { 'emailConfirmation.isConfirmed': true },
                 $unset: { 'emailConfirmation.confirmationCode': '' }
+            }
+        );
+        if (res.matchedCount < 1) {
+            throw new RepositoryNotFoundError('User not exist');
+        }
+    }
+
+
+
+    async findByRecoveryCode(code: string): Promise<WithId<User> | null> {
+        return userCollection.findOne({ 'mailPasswordRecovery.recoveryCode': code });
+    }
+
+    async setPasswordRecoveryData(email: string, mailPasswordRecovery: MailPasswordRecovery): Promise<void> {
+        await userCollection.updateOne(
+            { email: email.trim().toLowerCase() },
+            { $set: { mailPasswordRecovery } }
+        );
+    }
+
+    async updateMailPasswordByIdAndClearRecovery(id: string, newPasswordHash: string): Promise<void> {
+        const res = await userCollection.updateOne(
+            { _id: new ObjectId(id) },
+            {
+                $set: { 'passwordHash': newPasswordHash },
+                $unset: { 
+                    'mailPasswordRecovery.recoveryCode': '',
+                    'mailPasswordRecovery.expirationDate': ''
+                }
             }
         );
         if (res.matchedCount < 1) {
