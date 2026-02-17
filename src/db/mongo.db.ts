@@ -3,7 +3,7 @@ import { SETTINGS } from "../core/settings/settings";
 import { Blog } from "../blogs/domain/blog";
 import { Post } from "../posts/domain/post";
 import { User } from "../users/domain/user";
-import { Comment } from "../comments/domain/comment";
+import { Comment, CommentLikeDislikeStatus } from "../comments/domain/comment";
 import { BlacklistRefToken } from "../auth/domain/blacklistRefToken";
 import { DeviceSession } from "../device_sessions/domain/device-session";
 import { RateLimitRecord } from "../auth/domain/rate-limit-record";
@@ -15,6 +15,7 @@ const COMMENT_COLLECTION_NAME = "comments";
 const BLACKLIST_REF_TOKEN_COLLECTION_NAME = "blacklist_ref_token";
 const DEVICE_SESSIONS = "device_sessions";
 const RATE_LIMIT_COLLECTION_NAME = "rate_limit";
+const COMMENT_LIKES_COLLECTION_NAME = "comment_likes";
 
 export let client: MongoClient;
 export let blogCollection: Collection<Blog>;
@@ -24,6 +25,7 @@ export let commentCollection: Collection<Comment>;
 export let blacklistRefTokenCollection: Collection<BlacklistRefToken>;
 export let deviceSessionsCollection: Collection<DeviceSession>;
 export let rateLimitCollection: Collection<RateLimitRecord>;
+export let commentLikeDislikeStatusCollection: Collection<CommentLikeDislikeStatus>;
 
 // Кэшируем подключение между инвокациями функции
 let clientPromise: Promise<MongoClient> | null = null;
@@ -53,6 +55,7 @@ export function runDB(url: string): Promise<void> {
                 blacklistRefTokenCollection = db.collection<BlacklistRefToken>(BLACKLIST_REF_TOKEN_COLLECTION_NAME);
                 deviceSessionsCollection = db.collection<DeviceSession>(DEVICE_SESSIONS);
                 rateLimitCollection = db.collection<RateLimitRecord>(RATE_LIMIT_COLLECTION_NAME);
+                commentLikeDislikeStatusCollection = db.collection<CommentLikeDislikeStatus>(COMMENT_LIKES_COLLECTION_NAME);
 
                 // TTL индексы
                 // уникальный индекс по deviceId

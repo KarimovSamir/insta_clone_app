@@ -28,6 +28,7 @@ import { MailerService } from '../../auth/adapters/resend.mailer';
 import { TestingRepository } from '../../testing/repositories/testing.repository';
 import { TestingService } from '../../testing/application/testing.service';
 import { TestingController } from '../../testing/controllers/testing.controller';
+import { CommentLikeDislikeRepository } from '../../comments/repositories/comment.like-dislike.repository';
 
 const appContainer = new Container();
 
@@ -60,6 +61,10 @@ appContainer
 appContainer
   .bind<CommentRepository>(TYPES.CommentRepository)
   .to(CommentRepository)
+  .inSingletonScope();
+appContainer
+  .bind<CommentLikeDislikeRepository>(TYPES.CommentLikeStatusRepository)
+  .to(CommentLikeDislikeRepository)
   .inSingletonScope();
 appContainer
   .bind<CommentsService>(TYPES.CommentsService)

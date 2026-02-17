@@ -25,148 +25,148 @@ type CurrentUser = { _id: any; login: string; email: string; createdAt: string }
 
 @injectable()
 export class PostsController {
-  constructor(
-    @inject(TYPES.PostsService)
-    private readonly postsService: PostsService,
-    @inject(TYPES.CommentsService)
-    private readonly commentsService: CommentsService,
-  ) {}
+    constructor(
+        @inject(TYPES.PostsService)
+        private readonly postsService: PostsService,
+        @inject(TYPES.CommentsService)
+        private readonly commentsService: CommentsService,
+    ) { }
 
-  getPostList: RequestHandler = async (req, res) => {
-    try {
-      const sanitizedQuery = matchedData(req, {
-        locations: ['query'],
-        includeOptionals: true,
-      }) as PostQueryInput;
-      const queryInput = setDefaultSortAndPaginationIfNotExist(sanitizedQuery);
+    getPostList: RequestHandler = async (req, res) => {
+        try {
+            const sanitizedQuery = matchedData(req, {
+                locations: ['query'],
+                includeOptionals: true,
+            }) as PostQueryInput;
+            const queryInput = setDefaultSortAndPaginationIfNotExist(sanitizedQuery);
 
-      const { items, totalCount } = await this.postsService.findPosts(queryInput);
+            const { items, totalCount } = await this.postsService.findPosts(queryInput);
 
-      const postListOutput = mapToPostListPaginatedOutput(items, {
-        pageNumber: queryInput.pageNumber,
-        pageSize: queryInput.pageSize,
-        totalCount,
-      });
+            const postListOutput = mapToPostListPaginatedOutput(items, {
+                pageNumber: queryInput.pageNumber,
+                pageSize: queryInput.pageSize,
+                totalCount,
+            });
 
-      res.send(postListOutput);
-    } catch (error) {
-      res.sendStatus(HttpStatus.InternalServerError);
-    }
-  };
+            res.send(postListOutput);
+        } catch (error) {
+            res.sendStatus(HttpStatus.InternalServerError);
+        }
+    };
 
-  getPostById: RequestHandler<PostRequestParams> = async (req, res) => {
-    try {
-      const post = await this.postsService.findPostByIdOrFail(req.params.id);
-      const postOutput = mapToPostOutputUtil(post);
+    getPostById: RequestHandler<PostRequestParams> = async (req, res) => {
+        try {
+            const post = await this.postsService.findPostByIdOrFail(req.params.id);
+            const postOutput = mapToPostOutputUtil(post);
 
-      res.send(postOutput);
-    } catch (error) {
-      res.sendStatus(HttpStatus.NotFound);
-    }
-  };
+            res.send(postOutput);
+        } catch (error) {
+            res.sendStatus(HttpStatus.NotFound);
+        }
+    };
 
-  createPost: RequestHandler<unknown, unknown, PostCreateInput> = async (
-    req,
-    res,
-  ) => {
-    try {
-      const createdPostId = await this.postsService.createPost(req.body);
-      const createdPost = await this.postsService.findPostByIdOrFail(
-        createdPostId,
-      );
-      const postOutput = mapToPostOutputUtil(createdPost);
+    createPost: RequestHandler<unknown, unknown, PostCreateInput> = async (
+        req,
+        res,
+    ) => {
+        try {
+            const createdPostId = await this.postsService.createPost(req.body);
+            const createdPost = await this.postsService.findPostByIdOrFail(
+                createdPostId,
+            );
+            const postOutput = mapToPostOutputUtil(createdPost);
 
-      res.status(HttpStatus.Created).send(postOutput);
-    } catch (error) {
-      if (error instanceof RepositoryNotFoundError) {
-        res.sendStatus(HttpStatus.NotFound);
-        return;
-      }
+            res.status(HttpStatus.Created).send(postOutput);
+        } catch (error) {
+            if (error instanceof RepositoryNotFoundError) {
+                res.sendStatus(HttpStatus.NotFound);
+                return;
+            }
 
-      res.sendStatus(HttpStatus.InternalServerError);
-    }
-  };
+            res.sendStatus(HttpStatus.InternalServerError);
+        }
+    };
 
-  updatePostById: RequestHandler<PostRequestParams, unknown, PostUpdateInput> = async (
-    req,
-    res,
-  ) => {
-    try {
-      await this.postsService.updatePostById(req.params.id, req.body);
-      res.sendStatus(HttpStatus.NoContent);
-    } catch (error) {
-      res.sendStatus(HttpStatus.NotFound);
-    }
-  };
+    updatePostById: RequestHandler<PostRequestParams, unknown, PostUpdateInput> = async (
+        req,
+        res,
+    ) => {
+        try {
+            await this.postsService.updatePostById(req.params.id, req.body);
+            res.sendStatus(HttpStatus.NoContent);
+        } catch (error) {
+            res.sendStatus(HttpStatus.NotFound);
+        }
+    };
 
-  deletePostById: RequestHandler<PostRequestParams> = async (req, res) => {
-    try {
-      await this.postsService.deletePostById(req.params.id);
-      res.sendStatus(HttpStatus.NoContent);
-    } catch (error) {
-      res.sendStatus(HttpStatus.NotFound);
-    }
-  };
+    deletePostById: RequestHandler<PostRequestParams> = async (req, res) => {
+        try {
+            await this.postsService.deletePostById(req.params.id);
+            res.sendStatus(HttpStatus.NoContent);
+        } catch (error) {
+            res.sendStatus(HttpStatus.NotFound);
+        }
+    };
 
-  createPostComment: RequestHandler<PostRequestParams, unknown, CommentCreateByIdInput> = async (
-    req,
-    res,
-  ) => {
-    try {
-      const currentUser = res.locals.currentUser as CurrentUser | undefined;
-      const createdCommentId = await this.commentsService.createCommentWithUrlPostId(
-        req.params.id,
-        req.body,
-        currentUser!,
-      );
-      const createdComment = await this.commentsService.findCommentByIdOrFail(
-        createdCommentId,
-      );
-      const commentOutput = mapToCommentOutputUtil(createdComment);
+    createPostComment: RequestHandler<PostRequestParams, unknown, CommentCreateByIdInput> = async (
+        req,
+        res,
+    ) => {
+        try {
+            const currentUser = res.locals.currentUser as CurrentUser | undefined;
+            const createdCommentId = await this.commentsService.createCommentWithUrlPostId(
+                req.params.id,
+                req.body,
+                currentUser!,
+            );
+            const createdComment = await this.commentsService.findCommentByIdOrFail(
+                createdCommentId,
+            );
+            const commentOutput = mapToCommentOutputUtil(createdComment);
 
-      res.status(HttpStatus.Created).send(commentOutput);
-    } catch (error) {
-      if (error instanceof RepositoryNotFoundError) {
-        res.sendStatus(HttpStatus.NotFound);
-        return;
-      }
+            res.status(HttpStatus.Created).send(commentOutput);
+        } catch (error) {
+            if (error instanceof RepositoryNotFoundError) {
+                res.sendStatus(HttpStatus.NotFound);
+                return;
+            }
 
-      res.sendStatus(HttpStatus.InternalServerError);
-    }
-  };
+            res.sendStatus(HttpStatus.InternalServerError);
+        }
+    };
 
-  getPostComments: RequestHandler<PostRequestParams> = async (req, res) => {
-    try {
-      const sanitizedQuery = matchedData(req, {
-        locations: ['query'],
-        includeOptionals: true,
-      }) as CommentQueryInput;
+    getPostComments: RequestHandler<PostRequestParams> = async (req, res) => {
+        try {
+            const sanitizedQuery = matchedData(req, {
+                locations: ['query'],
+                includeOptionals: true,
+            }) as CommentQueryInput;
 
-      const queryInput = setDefaultSortAndPaginationIfNotExist(sanitizedQuery);
+            const queryInput = setDefaultSortAndPaginationIfNotExist(sanitizedQuery);
 
-      const { items, totalCount } =
-        await this.commentsService.findCommentsByPost(
-          queryInput,
-          req.params.id,
-        );
+            const { items, totalCount } =
+                await this.commentsService.findCommentsByPost(
+                    queryInput,
+                    req.params.id,
+                );
 
-      const commentListOutput = mapToCommentListPaginatedOutput(
-        items as WithId<Comment>[],
-        {
-          pageNumber: queryInput.pageNumber,
-          pageSize: queryInput.pageSize,
-          totalCount,
-        },
-      );
+            const commentListOutput = mapToCommentListPaginatedOutput(
+                items as WithId<Comment>[],
+                {
+                    pageNumber: queryInput.pageNumber,
+                    pageSize: queryInput.pageSize,
+                    totalCount,
+                },
+            );
 
-      res.send(commentListOutput);
-    } catch (error) {
-      if (error instanceof RepositoryNotFoundError) {
-        res.sendStatus(HttpStatus.NotFound);
-        return;
-      }
+            res.send(commentListOutput);
+        } catch (error) {
+            if (error instanceof RepositoryNotFoundError) {
+                res.sendStatus(HttpStatus.NotFound);
+                return;
+            }
 
-      res.sendStatus(HttpStatus.InternalServerError);
-    }
-  };
+            res.sendStatus(HttpStatus.InternalServerError);
+        }
+    };
 }

@@ -6,6 +6,8 @@ import { RepositoryForbiddenError } from '../../core/errors/repository-forbidden
 import { CommentsService } from '../application/comments.service';
 import { mapToCommentOutputUtil } from '../routers/mappers/map-to-comment-output.util';
 import { CommentUpdateInput } from '../routers/input/comment-update.input';
+import { RepositoryNotFoundError } from '../../core/errors/repository-not-found.error';
+import { CommentLikeStatusUpdateInput } from '../routers/input/comment-like-status-update.input';
 
 type CommentRequestParams = { id: string };
 
@@ -13,58 +15,87 @@ type CurrentUser = { _id: any; login: string; email: string; createdAt: string }
 
 @injectable()
 export class CommentsController {
-  constructor(
-    @inject(TYPES.CommentsService)
-    private readonly commentsService: CommentsService,
-  ) {}
+    constructor(
+        @inject(TYPES.CommentsService)
+        private readonly commentsService: CommentsService,
+    ) { }
 
-  getCommentById: RequestHandler<CommentRequestParams> = async (req, res) => {
-    try {
-      const comment = await this.commentsService.findCommentByIdOrFail(
-        req.params.id,
-      );
-      const commentOutput = mapToCommentOutputUtil(comment);
+    getCommentById: RequestHandler<CommentRequestParams> = async (req, res) => {
+        try {
+            const currentUser = res.locals.currentUser; 
+            const userId = currentUser ? currentUser._id.toString() : undefined;
 
-      res.status(HttpStatus.Ok).send(commentOutput);
-    } catch (error) {
-      res.sendStatus(HttpStatus.NotFound);
-    }
-  };
+            const result = await this.commentsService.getCommentResultById(
+                req.params.id, 
+                userId
+            );
 
-  updateCommentById: RequestHandler<CommentRequestParams, unknown, CommentUpdateInput> = async (
-    req,
-    res,
-  ) => {
-    try {
-      const currentUser = res.locals.currentUser as CurrentUser | undefined;
+            const commentOutput = mapToCommentOutputUtil(result.comment, result.myStatus);
 
-      await this.commentsService.updateComment(req.params.id, req.body, currentUser!);
+            res.status(HttpStatus.Ok).send(commentOutput);
+        } catch (error) {
+            if (error instanceof RepositoryNotFoundError) {
+                 res.sendStatus(HttpStatus.NotFound);
+                 return;
+            }
+            res.sendStatus(HttpStatus.InternalServerError);
+        }
+    };
 
-      res.sendStatus(HttpStatus.NoContent);
-    } catch (error) {
-      if (error instanceof RepositoryForbiddenError) {
-        res.sendStatus(HttpStatus.Forbidden);
-        return;
-      }
+    updateLikeStatusById: RequestHandler<CommentRequestParams, unknown, CommentLikeStatusUpdateInput> = async (
+        req,
+        res,
+    ) => {
+        try {
+            const currentUser = res.locals.currentUser as CurrentUser | undefined;
 
-      res.sendStatus(HttpStatus.NotFound);
-    }
-  };
+            await this.commentsService.updateLikeStatus(req.params.id, req.body, currentUser!);
 
-  deleteCommentById: RequestHandler<CommentRequestParams> = async (req, res) => {
-    try {
-      const currentUser = res.locals.currentUser as CurrentUser | undefined;
+            res.sendStatus(HttpStatus.NoContent);
+        } catch (error) {
+            if (error instanceof RepositoryForbiddenError) {
+                res.sendStatus(HttpStatus.Forbidden);
+                return;
+            }
 
-      await this.commentsService.deleteComment(req.params.id, currentUser!);
+            res.sendStatus(HttpStatus.NotFound);
+        }
+    };
 
-      res.sendStatus(HttpStatus.NoContent);
-    } catch (error) {
-      if (error instanceof RepositoryForbiddenError) {
-        res.sendStatus(HttpStatus.Forbidden);
-        return;
-      }
+    updateCommentById: RequestHandler<CommentRequestParams, unknown, CommentUpdateInput> = async (
+        req,
+        res,
+    ) => {
+        try {
+            const currentUser = res.locals.currentUser as CurrentUser | undefined;
 
-      res.sendStatus(HttpStatus.NotFound);
-    }
-  };
+            await this.commentsService.updateComment(req.params.id, req.body, currentUser!);
+
+            res.sendStatus(HttpStatus.NoContent);
+        } catch (error) {
+            if (error instanceof RepositoryForbiddenError) {
+                res.sendStatus(HttpStatus.Forbidden);
+                return;
+            }
+
+            res.sendStatus(HttpStatus.NotFound);
+        }
+    };
+
+    deleteCommentById: RequestHandler<CommentRequestParams> = async (req, res) => {
+        try {
+            const currentUser = res.locals.currentUser as CurrentUser | undefined;
+
+            await this.commentsService.deleteComment(req.params.id, currentUser!);
+
+            res.sendStatus(HttpStatus.NoContent);
+        } catch (error) {
+            if (error instanceof RepositoryForbiddenError) {
+                res.sendStatus(HttpStatus.Forbidden);
+                return;
+            }
+
+            res.sendStatus(HttpStatus.NotFound);
+        }
+    };
 }

@@ -4,7 +4,7 @@ import { TYPES } from '../../core/ioc/types';
 import { idValidation } from '../../core/middlewares/validation/params-id.validation-middleware';
 import { inputValidationResultMiddleware } from '../../core/middlewares/validation/input-validtion-result.middleware';
 import { bearerAuthGuard } from '../../auth/middlewares/bearer-auth.guard-middleware';
-import { updateCommentByIdInputDtoValidation } from './comment.input-dto.validation-middlewares';
+import { updateCommentByIdInputDtoValidation, updateLikeStatusInputDtoValidation } from './comment.input-dto.validation-middlewares';
 import { CommentsController } from '../controllers/comments.controller';
 
 export const commentRouter = Router({});
@@ -28,6 +28,15 @@ commentRouter
         updateCommentByIdInputDtoValidation,
         inputValidationResultMiddleware,
         commentsController.updateCommentById,
+    )
+
+    .put(
+        '/:id/like-status',
+        bearerAuthGuard,
+        idValidation,
+        updateLikeStatusInputDtoValidation,
+        inputValidationResultMiddleware,
+        commentsController.updateLikeStatusById
     )
 
     .delete(

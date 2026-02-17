@@ -8,10 +8,10 @@ import { CommentQueryInput } from '../routers/input/comment-query.input';
 
 @injectable()
 export class CommentRepository {
-  async findCommentsByPost(
-    queryDto: CommentQueryInput,
-    postId: string,
-  ): Promise<{ items: WithId<Comment>[]; totalCount: number }> {
+    async findCommentsByPost(
+        queryDto: CommentQueryInput,
+        postId: string,
+    ): Promise<{ items: WithId<Comment>[]; totalCount: number }> {
         const { pageNumber, pageSize, sortBy, sortDirection } = queryDto;
         // Фильтрация по документации работала по другому. Теперь фильтр совпадает с текущей документацией
         // const filter = { 'comment.id': postId };
@@ -27,47 +27,63 @@ export class CommentRepository {
                 .toArray(),
             commentCollection.countDocuments(filter),
         ]);
-    return { items, totalCount };
-  }
-
-  async findCommentByIdOrFail(id: string): Promise<WithId<Comment>> {
-    const res = await commentCollection.findOne({ _id: new ObjectId(id) });
-
-    if (!res) {
-      throw new RepositoryNotFoundError('Comment not exist');
+        return { items, totalCount };
     }
-    return res;
-  }
 
-  async createComment(newComment: Comment): Promise<string> {
-    const insertResult = await commentCollection.insertOne(newComment);
-    return insertResult.insertedId.toString();
-  }
+    async findCommentByIdOrFail(id: string): Promise<WithId<Comment>> {
+        const res = await commentCollection.findOne({ _id: new ObjectId(id) });
 
-  async updateCommentById(id: string, dto: CommentAttributes): Promise<void> {
-    const updateResult = await commentCollection.updateOne(
-      {
-        _id: new ObjectId(id),
-      },
-      {
-        $set: {
-          content: dto.content,
-        },
-      },
-    );
-
-    if (updateResult.matchedCount < 1) {
-      throw new Error('Comment not exist');
+        if (!res) {
+            throw new RepositoryNotFoundError('Comment not exist');
+        }
+        return res;
     }
-  }
 
-  async deleteCommentById(id: string): Promise<void> {
-    const deleteResult = await commentCollection.deleteOne({
-      _id: new ObjectId(id),
-    });
-
-    if (deleteResult.deletedCount < 1) {
-      throw new RepositoryNotFoundError('Comment not exist');
+    async createComment(newComment: Comment): Promise<string> {
+        const insertResult = await commentCollection.insertOne(newComment);
+        return insertResult.insertedId.toString();
     }
-  }
+
+    async updateCommentById(id: string, dto: CommentAttributes): Promise<void> {
+        const updateResult = await commentCollection.updateOne(
+            {
+                _id: new ObjectId(id),
+            },
+            {
+                $set: {
+                    content: dto.content,
+                },
+            },
+        );
+
+        if (updateResult.matchedCount < 1) {
+            throw new Error('Comment not exist');
+        }
+    }
+
+    async deleteCommentById(id: string): Promise<void> {
+        const deleteResult = await commentCollection.deleteOne({
+            _id: new ObjectId(id),
+        });
+
+        if (deleteResult.deletedCount < 1) {
+            throw new RepositoryNotFoundError('Comment not exist');
+        }
+    }
+
+    async updateCommentLikesInfo(
+        commentId: string,
+        likesCount: number,
+        dislikesCount: number
+    ): Promise<void> {
+        await commentCollection.updateOne(
+            { _id: new ObjectId(commentId) },
+            {
+                $set: {
+                    'likesInfo.likesCount': likesCount,
+                    'likesInfo.dislikesCount': dislikesCount
+                }
+            }
+        );
+    }
 }

@@ -1,9 +1,10 @@
 import { WithId } from "mongodb";
 import { CommentListPaginatedOutput } from "../output/comment-list-paginated.output";
-import { Comment } from "../../domain/comment";
+import { Comment, enumCommentLikeDislikeStatus } from "../../domain/comment";
 
 export function mapToCommentListPaginatedOutput (
     comments: WithId<Comment>[],
+    // myStatus: enumCommentLikeDislikeStatus,
     meta: { pageNumber: number; pageSize: number; totalCount: number },
 ): CommentListPaginatedOutput {
     return {
@@ -19,6 +20,11 @@ export function mapToCommentListPaginatedOutput (
                 userLogin: comment.commentatorInfo.userLogin
             },
             createdAt: comment.createdAt,
+            likesInfo: {
+                likesCount: comment.likesInfo.likesCount,
+                dislikesCount: comment.likesInfo.dislikesCount,
+                myStatus: enumCommentLikeDislikeStatus.None
+            }
         })),
     };
 }

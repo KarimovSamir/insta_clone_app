@@ -13,68 +13,68 @@ import { UserQueryInput } from '../routers/input/user-query.input';
 
 @injectable()
 export class UsersController {
-  constructor(
-    @inject(TYPES.UsersService)
-    private readonly usersService: UsersService,
-  ) {}
+    constructor(
+        @inject(TYPES.UsersService)
+        private readonly usersService: UsersService,
+    ) { }
 
-  getUserList: RequestHandler = async (req, res) => {
-    try {
-      const sanitizedQuery = matchedData(req, {
-        locations: ['query'],
-        includeOptionals: true,
-      }) as UserQueryInput;
+    getUserList: RequestHandler = async (req, res) => {
+        try {
+            const sanitizedQuery = matchedData(req, {
+                locations: ['query'],
+                includeOptionals: true,
+            }) as UserQueryInput;
 
-      const queryInput = setDefaultSortAndPaginationIfNotExist(sanitizedQuery);
-      const { items, totalCount } = await this.usersService.findUsers(queryInput);
+            const queryInput = setDefaultSortAndPaginationIfNotExist(sanitizedQuery);
+            const { items, totalCount } = await this.usersService.findUsers(queryInput);
 
-      const usersListOutput = mapToUserListPaginatedOutput(items, {
-        pageNumber: queryInput.pageNumber,
-        pageSize: queryInput.pageSize,
-        totalCount,
-      });
+            const usersListOutput = mapToUserListPaginatedOutput(items, {
+                pageNumber: queryInput.pageNumber,
+                pageSize: queryInput.pageSize,
+                totalCount,
+            });
 
-      res.send(usersListOutput);
-    } catch (error) {
-      res.sendStatus(HttpStatus.InternalServerError);
-    }
-  };
+            res.send(usersListOutput);
+        } catch (error) {
+            res.sendStatus(HttpStatus.InternalServerError);
+        }
+    };
 
-  createUser: RequestHandler<unknown, unknown, UserCreateInput> = async (
-    req,
-    res,
-  ) => {
-    try {
-      const createdUserId = await this.usersService.createUser(req.body);
-      const createdUser = await this.usersService.findUserByIdOrFail(
-        createdUserId,
-      );
-      const userOutput = mapToUserOutput(createdUser);
+    createUser: RequestHandler<unknown, unknown, UserCreateInput> = async (
+        req,
+        res,
+    ) => {
+        try {
+            const createdUserId = await this.usersService.createUser(req.body);
+            const createdUser = await this.usersService.findUserByIdOrFail(
+                createdUserId,
+            );
+            const userOutput = mapToUserOutput(createdUser);
 
-      res.status(HttpStatus.Created).send(userOutput);
-    } catch (error) {
-      if (error instanceof RepositoryBadRequestError) {
-        res.status(HttpStatus.BadRequest).json({
-          errorsMessages: [
-            {
-              message: error.message,
-              field: error.field ?? '',
-            },
-          ],
-        });
-        return;
-      }
+            res.status(HttpStatus.Created).send(userOutput);
+        } catch (error) {
+            if (error instanceof RepositoryBadRequestError) {
+                res.status(HttpStatus.BadRequest).json({
+                    errorsMessages: [
+                        {
+                            message: error.message,
+                            field: error.field ?? '',
+                        },
+                    ],
+                });
+                return;
+            }
 
-      res.sendStatus(HttpStatus.InternalServerError);
-    }
-  };
+            res.sendStatus(HttpStatus.InternalServerError);
+        }
+    };
 
-  deleteUserById: RequestHandler<{ id: string }> = async (req, res) => {
-    try {
-      await this.usersService.deleteUserById(req.params.id);
-      res.sendStatus(HttpStatus.NoContent);
-    } catch (error) {
-      res.sendStatus(HttpStatus.NotFound);
-    }
-  };
+    deleteUserById: RequestHandler<{ id: string }> = async (req, res) => {
+        try {
+            await this.usersService.deleteUserById(req.params.id);
+            res.sendStatus(HttpStatus.NoContent);
+        } catch (error) {
+            res.sendStatus(HttpStatus.NotFound);
+        }
+    };
 }
