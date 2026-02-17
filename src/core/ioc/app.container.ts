@@ -29,6 +29,7 @@ import { TestingRepository } from "../../testing/repositories/testing.repository
 import { TestingService } from "../../testing/application/testing.service";
 import { TestingController } from "../../testing/controllers/testing.controller";
 import { CommentLikeDislikeRepository } from "../../comments/repositories/comment.like-dislike.repository";
+import { PostLikeRepository } from "../../posts/repositories/post.likes.repository";
 
 const appContainer = new Container();
 
@@ -48,6 +49,10 @@ appContainer
 appContainer
     .bind<PostRepository>(TYPES.PostRepository)
     .to(PostRepository)
+    .inSingletonScope();
+appContainer
+    .bind<PostLikeRepository>(TYPES.PostLikeRepository)
+    .to(PostLikeRepository)
     .inSingletonScope();
 appContainer
     .bind<PostsService>(TYPES.PostsService)

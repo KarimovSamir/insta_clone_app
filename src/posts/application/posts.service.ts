@@ -6,6 +6,7 @@ import { PostRepository } from "../repositories/post.repository";
 import { Post } from "../domain/post";
 import { PostQueryInput } from "../routers/input/post-query.input";
 import { PostAttributes } from "./dtos/post-attributes";
+import { PostLikeRepository } from "../repositories/post.likes.repository";
 
 @injectable()
 export class PostsService {
@@ -14,6 +15,8 @@ export class PostsService {
         private readonly postsRepository: PostRepository,
         @inject(TYPES.BlogRepository)
         private readonly blogsRepository: BlogRepository,
+        @inject(TYPES.PostLikeRepository)
+        private readonly postLikeRepository: PostLikeRepository,
     ) {}
 
     async findPosts(
