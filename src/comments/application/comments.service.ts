@@ -31,10 +31,28 @@ export class CommentsService {
     async findCommentsByPost(
         queryDto: CommentQueryInput,
         postId: string,
-    ): Promise<{ items: WithId<Comment>[]; totalCount: number }> {
+        userId?: string
+    ): Promise<{ 
+        items: WithId<Comment>[]; 
+        totalCount: number; 
+        myStatusesDictionary: Record<string, enumCommentLikeDislikeStatus> 
+    }> {
         await this.postsService.findPostByIdOrFail(postId);
+        const { items, totalCount } = await this.commentsRepository.findCommentsByPost(queryDto, postId);
+        // Получаем статусы
+        const myStatusesDictionary: Record<string, enumCommentLikeDislikeStatus> = {};
 
-        return this.commentsRepository.findCommentsByPost(queryDto, postId);
+        if (userId) {
+            const commentId = items.map(c => c._id.toString());
+            const statuses = await this.commentLikeStatusRepository.findStatusesForComments(userId, commentId);
+
+            // Закидываем всё что нашли в словарь
+            statuses.forEach(status => {
+                myStatusesDictionary[status.commentId] = status.status;
+            });
+        }
+
+        return { items, totalCount, myStatusesDictionary };
     }
 
     async findCommentByIdOrFail(id: string): Promise<WithId<Comment>> {

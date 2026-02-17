@@ -4,6 +4,7 @@ import {
     CommentLikeDislikeStatus,
     enumCommentLikeDislikeStatus,
 } from "../domain/comment";
+import { WithId } from "mongodb";
 
 @injectable()
 export class CommentLikeDislikeRepository {
@@ -16,6 +17,16 @@ export class CommentLikeDislikeRepository {
             commentId: commentId,
         });
         return res;
+    }
+
+    // Метод для массового поиска
+    async findStatusesForComments(userId: string, commentIds: string[]): Promise<WithId<CommentLikeDislikeStatus>[]> {
+        return commentLikeDislikeStatusCollection
+            .find({
+                userId: userId,
+                commentId: { $in: commentIds } // Ищем любой из списка
+            })
+            .toArray();
     }
 
     async saveStatusCommentLikeDislike(

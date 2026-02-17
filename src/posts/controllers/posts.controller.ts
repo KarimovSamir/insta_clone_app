@@ -17,7 +17,7 @@ import { mapToCommentListPaginatedOutput } from "../../comments/routers/mappers/
 import { mapToCommentOutputUtil } from "../../comments/routers/mappers/map-to-comment-output.util";
 import { CommentQueryInput } from "../../comments/routers/input/comment-query.input";
 import { CommentCreateByIdInput } from "../../comments/routers/input/comment-create.input";
-import { Comment } from "../../comments/domain/comment";
+import { Comment, enumCommentLikeDislikeStatus } from "../../comments/domain/comment";
 
 type PostRequestParams = { id: string };
 
@@ -35,7 +35,7 @@ export class PostsController {
         private readonly postsService: PostsService,
         @inject(TYPES.CommentsService)
         private readonly commentsService: CommentsService,
-    ) {}
+    ) { }
 
     getPostList: RequestHandler = async (req, res) => {
         try {
@@ -136,7 +136,7 @@ export class PostsController {
                 await this.commentsService.findCommentByIdOrFail(
                     createdCommentId,
                 );
-            const commentOutput = mapToCommentOutputUtil(createdComment);
+            const commentOutput = mapToCommentOutputUtil(createdComment, enumCommentLikeDislikeStatus.None);
 
             res.status(HttpStatus.Created).send(commentOutput);
         } catch (error) {
@@ -151,6 +151,9 @@ export class PostsController {
 
     getPostComments: RequestHandler<PostRequestParams> = async (req, res) => {
         try {
+            const currentUser = res.locals.currentUser; 
+            const userId = currentUser ? currentUser._id.toString() : undefined;
+
             const sanitizedQuery = matchedData(req, {
                 locations: ["query"],
                 includeOptionals: true,
@@ -159,14 +162,20 @@ export class PostsController {
             const queryInput =
                 setDefaultSortAndPaginationIfNotExist(sanitizedQuery);
 
-            const { items, totalCount } =
+            // Мы передаем userId
+            // И мы получаем myStatusesDictionary
+            const { items, totalCount, myStatusesDictionary } = 
                 await this.commentsService.findCommentsByPost(
                     queryInput,
                     req.params.id,
+                    userId 
                 );
 
+            // Вызываем маппер
+            // Вторым аргументом мы передаем найденный словарь.
             const commentListOutput = mapToCommentListPaginatedOutput(
                 items as WithId<Comment>[],
+                myStatusesDictionary,
                 {
                     pageNumber: queryInput.pageNumber,
                     pageSize: queryInput.pageSize,
