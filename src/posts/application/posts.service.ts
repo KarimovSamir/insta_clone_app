@@ -22,8 +22,47 @@ export class PostsService {
 
     async findPosts(
         queryDto: PostQueryInput,
-    ): Promise<{ items: WithId<Post>[]; totalCount: number }> {
-        return this.postsRepository.findPosts(queryDto);
+        userId?: string
+    ): Promise<{
+        items: WithId<Post>[];
+        totalCount: number;
+        myStatusesDictionary: Record<string, enumPostLikeStatus>
+        newestLikesDictionary: Record<string, NewestLikes[]>
+    }> {
+        const { items, totalCount } = await this.postsRepository.findPosts(queryDto);
+        // Получаем статусы
+        const myStatusesDictionary: Record<string, enumPostLikeStatus> = {};
+        const newestLikesDictionary: Record<string, NewestLikes[]> = {};
+
+        if (userId) {
+            const postId = items.map(c => c._id.toString());
+            const statuses = await this.postLikeRepository.findStatusesForPosts(userId, postId);
+
+            // Закидываем всё что нашли в словарь
+            statuses.forEach(status => {
+                myStatusesDictionary[status.postId] = status.status;
+            });
+        }
+
+        await Promise.all(items.map(async (post) => {
+            const postId = post._id.toString();
+            // Идем в базу за лайками
+            const rawLikes = await this.postLikeRepository.findNewestLikes(postId);
+
+            // Превращаем формат БД (userLogin) в формат ответа (login)
+            newestLikesDictionary[postId] = rawLikes.map(like => ({
+                addedAt: like.addedAt,
+                userId: like.userId,
+                login: like.userLogin
+            }));
+        }));
+
+        return { 
+            items, 
+            totalCount, 
+            myStatusesDictionary, 
+            newestLikesDictionary 
+        };
     }
 
     async findPostsByBlog(
