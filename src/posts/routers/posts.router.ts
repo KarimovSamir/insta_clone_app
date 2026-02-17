@@ -14,6 +14,7 @@ import {
     postCreateInputDtoValidation,
     postUpdateInputDtoValidation,
 } from "./post.input-dto.validation-middlewares";
+import { softBearerAuthGuard } from "../../auth/middlewares/soft-bearer-auth.guard-middleware";
 
 export const postRouter = Router({});
 
@@ -31,17 +32,19 @@ postRouter
 
     .get(
         "/:id",
+        softBearerAuthGuard,
         idValidation,
         inputValidationResultMiddleware,
         postsController.getPostById,
     )
 
-    .post(
-        "",
-        superAdminGuardMiddleware,
-        postCreateInputDtoValidation,
+    .get(
+        "/:id/comments",
+        softBearerAuthGuard,
+        idValidation,
+        paginationAndSortingValidation(CommentSortField),
         inputValidationResultMiddleware,
-        postsController.createPost,
+        postsController.getPostComments,
     )
 
     .put(
@@ -52,13 +55,21 @@ postRouter
         inputValidationResultMiddleware,
         postsController.updatePostById,
     )
-
+    
     .delete(
         "/:id",
         superAdminGuardMiddleware,
         idValidation,
         inputValidationResultMiddleware,
         postsController.deletePostById,
+    )
+    
+    .post(
+        "",
+        superAdminGuardMiddleware,
+        postCreateInputDtoValidation,
+        inputValidationResultMiddleware,
+        postsController.createPost,
     )
 
     .post(
@@ -68,12 +79,4 @@ postRouter
         createPostCommentByIdInputDtoValidation,
         inputValidationResultMiddleware,
         postsController.createPostComment,
-    )
-
-    .get(
-        "/:id/comments",
-        idValidation,
-        paginationAndSortingValidation(CommentSortField),
-        inputValidationResultMiddleware,
-        postsController.getPostComments,
     );
