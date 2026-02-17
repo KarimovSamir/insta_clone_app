@@ -7,6 +7,7 @@ import { Post } from "../domain/post";
 import { PostQueryInput } from "../routers/input/post-query.input";
 import { PostAttributes } from "./dtos/post-attributes";
 import { PostLikeRepository } from "../repositories/post.likes.repository";
+import { enumPostLikeStatus, NewestLikes } from "../domain/post.likes";
 
 @injectable()
 export class PostsService {
@@ -17,7 +18,7 @@ export class PostsService {
         private readonly blogsRepository: BlogRepository,
         @inject(TYPES.PostLikeRepository)
         private readonly postLikeRepository: PostLikeRepository,
-    ) {}
+    ) { }
 
     async findPosts(
         queryDto: PostQueryInput,
@@ -36,6 +37,39 @@ export class PostsService {
 
     async findPostByIdOrFail(id: string): Promise<WithId<Post>> {
         return this.postsRepository.findPostByIdOrFail(id);
+    }
+
+    async getPostResultById(
+        postId: string,
+        userId?: string,
+    ): Promise<{
+        post: WithId<Post>;
+        myStatus: enumPostLikeStatus;
+        newestLikes: NewestLikes[];
+    }> {
+        const post = await this.postsRepository.findPostByIdOrFail(postId);
+        let myStatus = enumPostLikeStatus.None;
+
+        if (userId) {
+            const likeStatus =
+                await this.postLikeRepository.findByPostIdAndUserId(
+                    postId,
+                    userId,
+                );
+            if (likeStatus) {
+                myStatus = likeStatus.status;
+            }
+        }
+
+        const newestLikesDB = await this.postLikeRepository.findNewestLikes(postId)
+
+        const newestLikes: NewestLikes[] = newestLikesDB.map((like) => ({
+            addedAt: like.addedAt,
+            userId: like.userId,
+            login: like.userLogin,
+        }));
+
+        return { post, myStatus, newestLikes };
     }
 
     async createPost(dto: PostAttributes): Promise<string> {
