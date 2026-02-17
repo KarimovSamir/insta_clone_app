@@ -12,14 +12,17 @@ import { UserRepository } from "../../users/repositories/user.repository";
 // Если заходит авторизованный пользователь (есть токен), сервер должен это понять, чтобы показать его лайк
 // Если заходит гость (без токена), сервер пускает его, но показывает None
 
-const jwtService = appContainer.get<JwtService>(TYPES.JwtService);
-const userRepository = appContainer.get<UserRepository>(TYPES.UserRepository);
+// const jwtService = appContainer.get<JwtService>(TYPES.JwtService);
+// const userRepository = appContainer.get<UserRepository>(TYPES.UserRepository);
 
 export const softBearerAuthGuard = async (
     req: Request,
     res: Response,
     next: NextFunction,
 ) => {
+    const jwtService = appContainer.get<JwtService>(TYPES.JwtService);
+    const userRepository = appContainer.get<UserRepository>(TYPES.UserRepository);
+
     const auth = req.headers["authorization"];
     if (!auth || !auth.startsWith("Bearer ")) {
         return next()

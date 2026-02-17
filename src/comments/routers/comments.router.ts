@@ -9,6 +9,7 @@ import {
     updateLikeStatusInputDtoValidation,
 } from "./comment.input-dto.validation-middlewares";
 import { CommentsController } from "../controllers/comments.controller";
+import { softBearerAuthGuard } from "../../auth/middlewares/soft-bearer-auth.guard-middleware";
 
 export const commentRouter = Router({});
 
@@ -19,6 +20,7 @@ const commentsController = appContainer.get<CommentsController>(
 commentRouter
     .get(
         "/:id",
+        softBearerAuthGuard,
         idValidation,
         inputValidationResultMiddleware,
         commentsController.getCommentById,
