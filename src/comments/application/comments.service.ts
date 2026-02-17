@@ -1,16 +1,21 @@
-import { inject, injectable } from 'inversify';
-import { WithId } from 'mongodb';
-import { TYPES } from '../../core/ioc/types';
-import { RepositoryForbiddenError } from '../../core/errors/repository-forbidden.error';
-import { PostsService } from '../../posts/application/posts.service';
-import { CommentRepository } from '../repositories/comment.repository';
-import { Comment, enumCommentLikeDislikeStatus } from '../domain/comment';
-import { CommentQueryInput } from '../routers/input/comment-query.input';
-import { CommentAttributes } from './dtos/comment-attributes';
-import { CommentLikeDislikeRepository } from '../repositories/comment.like-dislike.repository';
-import { CommentLikeDislikeStatusAttributes } from './dtos/comment-like-dilsike-status-attributes';
+import { inject, injectable } from "inversify";
+import { WithId } from "mongodb";
+import { TYPES } from "../../core/ioc/types";
+import { RepositoryForbiddenError } from "../../core/errors/repository-forbidden.error";
+import { PostsService } from "../../posts/application/posts.service";
+import { CommentRepository } from "../repositories/comment.repository";
+import { Comment, enumCommentLikeDislikeStatus } from "../domain/comment";
+import { CommentQueryInput } from "../routers/input/comment-query.input";
+import { CommentAttributes } from "./dtos/comment-attributes";
+import { CommentLikeDislikeRepository } from "../repositories/comment.like-dislike.repository";
+import { CommentLikeDislikeStatusAttributes } from "./dtos/comment-like-dilsike-status-attributes";
 
-type CurrentUser = { _id: any; login: string; email: string; createdAt: string };
+type CurrentUser = {
+    _id: any;
+    login: string;
+    email: string;
+    createdAt: string;
+};
 
 @injectable()
 export class CommentsService {
@@ -21,8 +26,7 @@ export class CommentsService {
         private readonly postsService: PostsService,
         @inject(TYPES.CommentLikeStatusRepository)
         private readonly commentLikeStatusRepository: CommentLikeDislikeRepository,
-        
-    ) { }
+    ) {}
 
     async findCommentsByPost(
         queryDto: CommentQueryInput,
@@ -37,12 +41,22 @@ export class CommentsService {
         return this.commentsRepository.findCommentByIdOrFail(id);
     }
 
-    async getCommentResultById(id: string, userId?: string): Promise<{ comment: WithId<Comment>, myStatus: enumCommentLikeDislikeStatus }> {        
+    async getCommentResultById(
+        id: string,
+        userId?: string,
+    ): Promise<{
+        comment: WithId<Comment>;
+        myStatus: enumCommentLikeDislikeStatus;
+    }> {
         const comment = await this.commentsRepository.findCommentByIdOrFail(id);
         let myStatus = enumCommentLikeDislikeStatus.None;
 
         if (userId) {
-            const likeStatus = await this.commentLikeStatusRepository.findByUserIdAndCommentId(userId, id);
+            const likeStatus =
+                await this.commentLikeStatusRepository.findByUserIdAndCommentId(
+                    userId,
+                    id,
+                );
             if (likeStatus) {
                 myStatus = likeStatus.status;
             }
@@ -78,7 +92,9 @@ export class CommentsService {
     async deleteComment(id: string, user: CurrentUser): Promise<void> {
         const comment = await this.commentsRepository.findCommentByIdOrFail(id);
         if (comment.commentatorInfo.userId !== user._id.toString()) {
-            throw new RepositoryForbiddenError('You can delete only your own comments');
+            throw new RepositoryForbiddenError(
+                "You can delete only your own comments",
+            );
         }
         await this.commentsRepository.deleteCommentById(id);
     }
@@ -90,7 +106,9 @@ export class CommentsService {
     ): Promise<void> {
         const comment = await this.commentsRepository.findCommentByIdOrFail(id);
         if (comment.commentatorInfo.userId !== user._id.toString()) {
-            throw new RepositoryForbiddenError('You can update only your own comments');
+            throw new RepositoryForbiddenError(
+                "You can update only your own comments",
+            );
         }
         await this.commentsRepository.updateCommentById(id, dto);
     }
@@ -101,12 +119,15 @@ export class CommentsService {
         user: CurrentUser,
     ): Promise<void> {
         const comment = await this.commentsRepository.findCommentByIdOrFail(id);
-        const likeStatusComment = await this.commentLikeStatusRepository.findByUserIdAndCommentId(
-            user._id.toString(),
-            id
-        );
+        const likeStatusComment =
+            await this.commentLikeStatusRepository.findByUserIdAndCommentId(
+                user._id.toString(),
+                id,
+            );
 
-        const currentStatus = likeStatusComment ? likeStatusComment.status : enumCommentLikeDislikeStatus.None;
+        const currentStatus = likeStatusComment
+            ? likeStatusComment.status
+            : enumCommentLikeDislikeStatus.None;
         const newStatus = dto.likeStatus;
 
         if (currentStatus === newStatus) {
@@ -138,14 +159,14 @@ export class CommentsService {
             this.commentLikeStatusRepository.saveStatusCommentLikeDislike(
                 user._id.toString(),
                 id,
-                newStatus
+                newStatus,
             ),
             // Обновляем общие цифры в комментарии
             this.commentsRepository.updateCommentLikesInfo(
                 id,
                 likesCount,
-                dislikesCount
-            )
+                dislikesCount,
+            ),
         ]);
     }
 }

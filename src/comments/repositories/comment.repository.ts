@@ -1,10 +1,10 @@
-import { injectable } from 'inversify';
-import { ObjectId, WithId } from 'mongodb';
-import { commentCollection } from '../../db/mongo.db';
-import { RepositoryNotFoundError } from '../../core/errors/repository-not-found.error';
-import { CommentAttributes } from '../application/dtos/comment-attributes';
-import { Comment } from '../domain/comment';
-import { CommentQueryInput } from '../routers/input/comment-query.input';
+import { injectable } from "inversify";
+import { ObjectId, WithId } from "mongodb";
+import { commentCollection } from "../../db/mongo.db";
+import { RepositoryNotFoundError } from "../../core/errors/repository-not-found.error";
+import { CommentAttributes } from "../application/dtos/comment-attributes";
+import { Comment } from "../domain/comment";
+import { CommentQueryInput } from "../routers/input/comment-query.input";
 
 @injectable()
 export class CommentRepository {
@@ -34,7 +34,7 @@ export class CommentRepository {
         const res = await commentCollection.findOne({ _id: new ObjectId(id) });
 
         if (!res) {
-            throw new RepositoryNotFoundError('Comment not exist');
+            throw new RepositoryNotFoundError("Comment not exist");
         }
         return res;
     }
@@ -57,7 +57,7 @@ export class CommentRepository {
         );
 
         if (updateResult.matchedCount < 1) {
-            throw new Error('Comment not exist');
+            throw new Error("Comment not exist");
         }
     }
 
@@ -67,23 +67,23 @@ export class CommentRepository {
         });
 
         if (deleteResult.deletedCount < 1) {
-            throw new RepositoryNotFoundError('Comment not exist');
+            throw new RepositoryNotFoundError("Comment not exist");
         }
     }
 
     async updateCommentLikesInfo(
         commentId: string,
         likesCount: number,
-        dislikesCount: number
+        dislikesCount: number,
     ): Promise<void> {
         await commentCollection.updateOne(
             { _id: new ObjectId(commentId) },
             {
                 $set: {
-                    'likesInfo.likesCount': likesCount,
-                    'likesInfo.dislikesCount': dislikesCount
-                }
-            }
+                    "likesInfo.likesCount": likesCount,
+                    "likesInfo.dislikesCount": dislikesCount,
+                },
+            },
         );
     }
 }

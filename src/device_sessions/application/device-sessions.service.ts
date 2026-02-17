@@ -1,8 +1,8 @@
-import { inject, injectable } from 'inversify';
-import { TYPES } from '../../core/ioc/types';
-import { DeviceSessionsRepository } from '../repositories/device-sessions.repository';
-import { DeviceSession } from '../domain/device-session';
-import { DeviceSessionAttributes } from './dtos/device-session-attributes';
+import { inject, injectable } from "inversify";
+import { TYPES } from "../../core/ioc/types";
+import { DeviceSessionsRepository } from "../repositories/device-sessions.repository";
+import { DeviceSession } from "../domain/device-session";
+import { DeviceSessionAttributes } from "./dtos/device-session-attributes";
 
 @injectable()
 export class DeviceSessionsService {
@@ -24,7 +24,10 @@ export class DeviceSessionsService {
         await this.deviceSessionsRepository.createSession(newSession);
     }
 
-    async findSession(userId: string, deviceId: string): Promise<DeviceSession | null> {
+    async findSession(
+        userId: string,
+        deviceId: string,
+    ): Promise<DeviceSession | null> {
         return this.deviceSessionsRepository.findSession(userId, deviceId);
     }
 
@@ -50,7 +53,10 @@ export class DeviceSessionsService {
         );
     }
 
-    async deleteAllSessionsExcept(userId: string, deviceIdToKeep: string): Promise<void> {
+    async deleteAllSessionsExcept(
+        userId: string,
+        deviceIdToKeep: string,
+    ): Promise<void> {
         await this.deviceSessionsRepository.deleteAllSessionsExcept(
             userId,
             deviceIdToKeep,

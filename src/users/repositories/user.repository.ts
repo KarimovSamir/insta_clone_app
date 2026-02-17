@@ -1,10 +1,10 @@
-import { injectable } from 'inversify';
-import { Filter, ObjectId, WithId } from 'mongodb';
-import { userCollection } from '../../db/mongo.db';
-import { RepositoryBadRequestError } from '../../core/errors/repository-bad-request.error';
-import { RepositoryNotFoundError } from '../../core/errors/repository-not-found.error';
-import { EmailConfirmation, MailPasswordRecovery, User } from '../domain/user';
-import { UserQueryInput } from '../routers/input/user-query.input';
+import { injectable } from "inversify";
+import { Filter, ObjectId, WithId } from "mongodb";
+import { userCollection } from "../../db/mongo.db";
+import { RepositoryBadRequestError } from "../../core/errors/repository-bad-request.error";
+import { RepositoryNotFoundError } from "../../core/errors/repository-not-found.error";
+import { EmailConfirmation, MailPasswordRecovery, User } from "../domain/user";
+import { UserQueryInput } from "../routers/input/user-query.input";
 
 @injectable()
 export class UserRepository {
@@ -24,10 +24,10 @@ export class UserRepository {
         const filter: Filter<User> = {};
 
         const loginFilter = searchLoginTerm
-            ? { login: { $regex: searchLoginTerm, $options: 'i' } }
+            ? { login: { $regex: searchLoginTerm, $options: "i" } }
             : null;
         const emailFilter = searchEmailTerm
-            ? { email: { $regex: searchEmailTerm, $options: 'i' } }
+            ? { email: { $regex: searchEmailTerm, $options: "i" } }
             : null;
 
         if (loginFilter && emailFilter) {
@@ -54,7 +54,7 @@ export class UserRepository {
         const res = await userCollection.findOne({ _id: new ObjectId(id) });
 
         if (!res) {
-            throw new RepositoryNotFoundError('User not exist');
+            throw new RepositoryNotFoundError("User not exist");
         }
         return res;
     }
@@ -65,21 +65,31 @@ export class UserRepository {
 
         const loginTaken = await userCollection.findOne(
             { login },
-            { projection: { _id: 1 } }
+            { projection: { _id: 1 } },
         );
         if (loginTaken) {
-            throw new RepositoryBadRequestError('Login is already in use', 'login');
+            throw new RepositoryBadRequestError(
+                "Login is already in use",
+                "login",
+            );
         }
 
         const emailTaken = await userCollection.findOne(
             { email },
-            { projection: { _id: 1 } }
+            { projection: { _id: 1 } },
         );
         if (emailTaken) {
-            throw new RepositoryBadRequestError('Email is already in use', 'email');
+            throw new RepositoryBadRequestError(
+                "Email is already in use",
+                "email",
+            );
         }
 
-        const insertResult = await userCollection.insertOne({ ...newUser, login, email });
+        const insertResult = await userCollection.insertOne({
+            ...newUser,
+            login,
+            email,
+        });
         return insertResult.insertedId.toString();
     }
 
@@ -89,60 +99,71 @@ export class UserRepository {
         });
 
         if (deleteResult.deletedCount < 1) {
-            throw new RepositoryNotFoundError('User not exist');
+            throw new RepositoryNotFoundError("User not exist");
         }
     }
 
-    async setEmailConfirmationByEmail(email: string, emailConfirmation: EmailConfirmation): Promise<void> {
+    async setEmailConfirmationByEmail(
+        email: string,
+        emailConfirmation: EmailConfirmation,
+    ): Promise<void> {
         await userCollection.updateOne(
             { email: email.trim().toLowerCase() },
-            { $set: { emailConfirmation } }
+            { $set: { emailConfirmation } },
         );
     }
 
     async findByConfirmationCode(code: string): Promise<WithId<User> | null> {
-        return userCollection.findOne({ 'emailConfirmation.confirmationCode': code });
+        return userCollection.findOne({
+            "emailConfirmation.confirmationCode": code,
+        });
     }
 
     async confirmUserById(id: string): Promise<void> {
         const res = await userCollection.updateOne(
             { _id: new ObjectId(id) },
             {
-                $set: { 'emailConfirmation.isConfirmed': true },
-                $unset: { 'emailConfirmation.confirmationCode': '' }
-            }
+                $set: { "emailConfirmation.isConfirmed": true },
+                $unset: { "emailConfirmation.confirmationCode": "" },
+            },
         );
         if (res.matchedCount < 1) {
-            throw new RepositoryNotFoundError('User not exist');
+            throw new RepositoryNotFoundError("User not exist");
         }
     }
 
-
-
     async findByRecoveryCode(code: string): Promise<WithId<User> | null> {
-        return userCollection.findOne({ 'mailPasswordRecovery.recoveryCode': code });
+        return userCollection.findOne({
+            "mailPasswordRecovery.recoveryCode": code,
+        });
     }
 
-    async setPasswordRecoveryData(email: string, mailPasswordRecovery: MailPasswordRecovery): Promise<void> {
+    async setPasswordRecoveryData(
+        email: string,
+        mailPasswordRecovery: MailPasswordRecovery,
+    ): Promise<void> {
         await userCollection.updateOne(
             { email: email.trim().toLowerCase() },
-            { $set: { mailPasswordRecovery } }
+            { $set: { mailPasswordRecovery } },
         );
     }
 
-    async updateMailPasswordByIdAndClearRecovery(id: string, newPasswordHash: string): Promise<void> {
+    async updateMailPasswordByIdAndClearRecovery(
+        id: string,
+        newPasswordHash: string,
+    ): Promise<void> {
         const res = await userCollection.updateOne(
             { _id: new ObjectId(id) },
             {
-                $set: { 'passwordHash': newPasswordHash },
-                $unset: { 
-                    'mailPasswordRecovery.recoveryCode': '',
-                    'mailPasswordRecovery.expirationDate': ''
-                }
-            }
+                $set: { passwordHash: newPasswordHash },
+                $unset: {
+                    "mailPasswordRecovery.recoveryCode": "",
+                    "mailPasswordRecovery.expirationDate": "",
+                },
+            },
         );
         if (res.matchedCount < 1) {
-            throw new RepositoryNotFoundError('User not exist');
+            throw new RepositoryNotFoundError("User not exist");
         }
     }
 }

@@ -1,6 +1,6 @@
-import { injectable } from 'inversify';
-import { rateLimitCollection } from '../../db/mongo.db';
-import { RateLimitRecord } from '../domain/rate-limit-record';
+import { injectable } from "inversify";
+import { rateLimitCollection } from "../../db/mongo.db";
+import { RateLimitRecord } from "../domain/rate-limit-record";
 
 @injectable()
 export class RateLimitRepository {
@@ -8,7 +8,11 @@ export class RateLimitRepository {
         await rateLimitCollection.insertOne(record);
     }
 
-    async countRequests(ip: string, url: string, fromDate: Date): Promise<number> {
+    async countRequests(
+        ip: string,
+        url: string,
+        fromDate: Date,
+    ): Promise<number> {
         return rateLimitCollection.countDocuments({
             ip,
             url,

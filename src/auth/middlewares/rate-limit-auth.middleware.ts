@@ -40,7 +40,11 @@ const rateLimitService = appContainer.get<RateLimitService>(
     TYPES.RateLimitService,
 );
 
-export async function rateLimitAuthMiddleware(req: Request, res: Response, next: NextFunction) {
+export async function rateLimitAuthMiddleware(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) {
     const ip = req.ip;
     const url = (req.originalUrl || "").split("?")[0];
 

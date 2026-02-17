@@ -1,11 +1,11 @@
-import { NextFunction, Request, Response } from 'express';
-import { HttpStatus } from '../../core/types/http-statuses';
-import { appContainer } from '../../core/ioc/app.container';
-import { TYPES } from '../../core/ioc/types';
-import { JwtService } from '../adapters/jwt.service';
-import { TokenBlacklistService } from '../application/token-blacklist.service';
-import { DeviceSessionsService } from '../../device_sessions/application/device-sessions.service';
-import { RefreshPayload } from '../domain/jwt-payloads';
+import { NextFunction, Request, Response } from "express";
+import { HttpStatus } from "../../core/types/http-statuses";
+import { appContainer } from "../../core/ioc/app.container";
+import { TYPES } from "../../core/ioc/types";
+import { JwtService } from "../adapters/jwt.service";
+import { TokenBlacklistService } from "../application/token-blacklist.service";
+import { DeviceSessionsService } from "../../device_sessions/application/device-sessions.service";
+import { RefreshPayload } from "../domain/jwt-payloads";
 
 const jwtService = appContainer.get<JwtService>(TYPES.JwtService);
 const tokenBlacklistService = appContainer.get<TokenBlacklistService>(
@@ -15,7 +15,11 @@ const deviceSessionsService = appContainer.get<DeviceSessionsService>(
     TYPES.DeviceSessionsService,
 );
 
-export async function refreshTokenGuard(req: Request, res: Response, next: NextFunction) {
+export async function refreshTokenGuard(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) {
     // берём refreshToken из куки
     const refreshToken = req.cookies?.refreshToken;
     if (!refreshToken) {
@@ -35,7 +39,10 @@ export async function refreshTokenGuard(req: Request, res: Response, next: NextF
     }
 
     // проверка, что сессия всё ещё существует
-    const session = await deviceSessionsService.findSession(payload.userId, payload.deviceId);
+    const session = await deviceSessionsService.findSession(
+        payload.userId,
+        payload.deviceId,
+    );
     if (!session) {
         return res.sendStatus(HttpStatus.Unauthorized);
     }
@@ -43,7 +50,7 @@ export async function refreshTokenGuard(req: Request, res: Response, next: NextF
     // проверка session.exp. парсим потому что первоначально строка
     // Доп проверка, потому что у сессии и токена может быть разное время жизни
     // И если даже токен ещё жив, то сессия уже может быть не рабочей
-    // Например если сессия должна вырубаться через 30 дней. 
+    // Например если сессия должна вырубаться через 30 дней.
     // В момент когда сессия должна вырубиться, токен может обновиться
     const expMs = Date.parse(session.exp);
     if (Number.isFinite(expMs) && expMs < Date.now()) {

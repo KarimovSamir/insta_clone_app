@@ -1,5 +1,5 @@
 // При смене, поменять код и в src\auth\middlewares\rate-limit-auth.middleware.ts
-// Верхний код 
+// Верхний код
 
 // import { rateLimitRepository } from "../repositories/rate-limit.repository";
 
@@ -30,9 +30,9 @@
 //     },
 // };
 
-import { inject, injectable } from 'inversify';
-import { TYPES } from '../../core/ioc/types';
-import { RateLimitRepository } from '../repositories/rate-limit.repository';
+import { inject, injectable } from "inversify";
+import { TYPES } from "../../core/ioc/types";
+import { RateLimitRepository } from "../repositories/rate-limit.repository";
 
 const WINDOW_MS = 10_000;
 const MAX_REQUESTS = 5;

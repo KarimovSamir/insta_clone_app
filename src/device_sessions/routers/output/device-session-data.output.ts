@@ -1,5 +1,5 @@
 export type DeviceSessionDataOutput = {
-    ip: string,
+    ip: string;
     title: string;
     lastActiveDate: string;
     deviceId: string;

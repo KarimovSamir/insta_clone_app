@@ -1,5 +1,5 @@
-import { injectable } from 'inversify';
-import { blacklistRefTokenCollection } from '../../db/mongo.db';
+import { injectable } from "inversify";
+import { blacklistRefTokenCollection } from "../../db/mongo.db";
 
 @injectable()
 export class TokenBlacklistRepository {

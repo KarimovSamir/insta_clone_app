@@ -1,71 +1,71 @@
-import { body } from 'express-validator';
+import { body } from "express-validator";
 
-const nameValidation = body('name')
+const nameValidation = body("name")
     .exists()
-    .withMessage('name is required')
+    .withMessage("name is required")
     .bail()
 
     .isString()
-    .withMessage('name should be string')
+    .withMessage("name should be string")
     .bail()
 
     .trim()
 
     .notEmpty()
-    .withMessage('name must not be empty')
+    .withMessage("name must not be empty")
     .bail()
-    
+
     .isLength({ min: 2, max: 15 })
-    .withMessage('Length of name is not correct');
+    .withMessage("Length of name is not correct");
 
-const descriptionValidation = body('description')
+const descriptionValidation = body("description")
     .exists()
-    .withMessage('description is required')
+    .withMessage("description is required")
     .bail()
 
     .isString()
-    .withMessage('description should be string')
+    .withMessage("description should be string")
     .bail()
 
     .trim()
 
     .notEmpty()
-    .withMessage('description must not be empty')
+    .withMessage("description must not be empty")
     .bail()
-    
+
     .isLength({ min: 2, max: 500 })
-    .withMessage('Length of description is not correct');
+    .withMessage("Length of description is not correct");
 
-const websiteUrlValidation = body('websiteUrl')
+const websiteUrlValidation = body("websiteUrl")
     .exists()
-    .withMessage('websiteUrl is required')
+    .withMessage("websiteUrl is required")
     .bail()
 
     .isString()
-    .withMessage('websiteUrl should be string')
+    .withMessage("websiteUrl should be string")
     .bail()
 
     .trim()
 
     .notEmpty()
-    .withMessage('websiteUrl must not be empty')
+    .withMessage("websiteUrl must not be empty")
     .bail()
-    
+
     .isLength({ min: 2, max: 100 })
-    .withMessage('Length of websiteUrl is not correct')
+    .withMessage("Length of websiteUrl is not correct")
     .bail()
 
     .isURL()
-    .withMessage('Invalid URL format. Ex: https://test.com');
+    .withMessage("Invalid URL format. Ex: https://test.com");
 
 export const blogCreateInputValidation = [
-  nameValidation,
-  descriptionValidation,
-  websiteUrlValidation
+    nameValidation,
+    descriptionValidation,
+    websiteUrlValidation,
 ];
 
 export const blogUpdateInputValidation = [
-  nameValidation,
-  descriptionValidation,
-  websiteUrlValidation
+    nameValidation,
+    descriptionValidation,
+    websiteUrlValidation,
 ];

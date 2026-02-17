@@ -1,6 +1,6 @@
-import { inject, injectable } from 'inversify';
-import { TYPES } from '../../core/ioc/types';
-import { TokenBlacklistRepository } from '../repositories/token-blacklist.repository';
+import { inject, injectable } from "inversify";
+import { TYPES } from "../../core/ioc/types";
+import { TokenBlacklistRepository } from "../repositories/token-blacklist.repository";
 
 @injectable()
 export class TokenBlacklistService {

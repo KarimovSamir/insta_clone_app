@@ -7,15 +7,15 @@ export type EmailConfirmation = {
 };
 
 export type MailPasswordRecovery = {
-    recoveryCode: string,
-    expirationDate: string
+    recoveryCode: string;
+    expirationDate: string;
 };
 
 export type User = {
-    login: string,
-    passwordHash: string,
-    email: string,
-    createdAt: string,
-    emailConfirmation?: EmailConfirmation,
-    mailPasswordRecovery?: MailPasswordRecovery
+    login: string;
+    passwordHash: string;
+    email: string;
+    createdAt: string;
+    emailConfirmation?: EmailConfirmation;
+    mailPasswordRecovery?: MailPasswordRecovery;
 };

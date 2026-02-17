@@ -1,8 +1,7 @@
-import express from 'express';
-import { setupApp } from '../../setup-app';
-import { runDB, stopDb } from '../../db/mongo.db';
-import { SETTINGS } from '../../core/settings/settings';
-
+import express from "express";
+import { setupApp } from "../../setup-app";
+import { runDB, stopDb } from "../../db/mongo.db";
+import { SETTINGS } from "../../core/settings/settings";
 
 export async function createTestApp() {
     const app = express();

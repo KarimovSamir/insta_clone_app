@@ -1,3 +1,3 @@
-import { PostDataOutput } from './post-data.output';
+import { PostDataOutput } from "./post-data.output";
 
-export type PostOutput = PostDataOutput
+export type PostOutput = PostDataOutput;

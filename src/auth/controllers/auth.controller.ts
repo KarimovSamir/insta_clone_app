@@ -1,19 +1,19 @@
-import { inject, injectable } from 'inversify';
-import { RequestHandler } from 'express';
-import { randomUUID } from 'crypto';
-import { TYPES } from '../../core/ioc/types';
-import { HttpStatus } from '../../core/types/http-statuses';
-import { SETTINGS } from '../../core/settings/settings';
-import { RepositoryBadRequestError } from '../../core/errors/repository-bad-request.error';
-import { AuthService } from '../application/auth.services';
-import { TokenBlacklistService } from '../application/token-blacklist.service';
-import { RegistrationAttributes } from '../application/dtos/registration-attributes';
-import { AuthRepository } from '../repositories/auth.repository';
-import { JwtService } from '../adapters/jwt.service';
-import { DeviceSessionsService } from '../../device_sessions/application/device-sessions.service';
-import { DeviceSessionAttributes } from '../../device_sessions/application/dtos/device-session-attributes';
-import { AuthAttributes } from '../application/dtos/auth-attributes';
-import { RefreshPayload } from '../domain/jwt-payloads';
+import { inject, injectable } from "inversify";
+import { RequestHandler } from "express";
+import { randomUUID } from "crypto";
+import { TYPES } from "../../core/ioc/types";
+import { HttpStatus } from "../../core/types/http-statuses";
+import { SETTINGS } from "../../core/settings/settings";
+import { RepositoryBadRequestError } from "../../core/errors/repository-bad-request.error";
+import { AuthService } from "../application/auth.services";
+import { TokenBlacklistService } from "../application/token-blacklist.service";
+import { RegistrationAttributes } from "../application/dtos/registration-attributes";
+import { AuthRepository } from "../repositories/auth.repository";
+import { JwtService } from "../adapters/jwt.service";
+import { DeviceSessionsService } from "../../device_sessions/application/device-sessions.service";
+import { DeviceSessionAttributes } from "../../device_sessions/application/dtos/device-session-attributes";
+import { AuthAttributes } from "../application/dtos/auth-attributes";
+import { RefreshPayload } from "../domain/jwt-payloads";
 
 @injectable()
 export class AuthController {
@@ -28,9 +28,12 @@ export class AuthController {
         private readonly deviceSessionsService: DeviceSessionsService,
         @inject(TYPES.TokenBlacklistService)
         private readonly tokenBlacklistService: TokenBlacklistService,
-    ) { }
+    ) {}
 
-    login: RequestHandler<unknown, unknown, AuthAttributes> = async (req, res) => {
+    login: RequestHandler<unknown, unknown, AuthAttributes> = async (
+        req,
+        res,
+    ) => {
         const credentials: AuthAttributes = {
             loginOrEmail: req.body.loginOrEmail,
             password: req.body.password,
@@ -56,11 +59,13 @@ export class AuthController {
 
         const sessionCredentials: DeviceSessionAttributes = {
             ip: req.ip!,
-            title: req.get('user-agent') ?? 'Unknown device',
+            title: req.get("user-agent") ?? "Unknown device",
             lastActiveDate: now.toISOString(),
             deviceId: sessionDeviceId,
             userId: user._id.toString(),
-            exp: new Date(now.getTime() + SETTINGS.RT_TIME * 1000).toISOString(),
+            exp: new Date(
+                now.getTime() + SETTINGS.RT_TIME * 1000,
+            ).toISOString(),
         };
 
         await this.deviceSessionsService.createSession(sessionCredentials);
@@ -74,10 +79,10 @@ export class AuthController {
         );
 
         try {
-            res.cookie('refreshToken', refreshToken, {
+            res.cookie("refreshToken", refreshToken, {
                 httpOnly: true,
                 secure: true,
-                sameSite: 'strict',
+                sameSite: "strict",
                 maxAge: SETTINGS.RT_TIME * 1000,
             });
             res.status(HttpStatus.Ok).json({ accessToken });
@@ -118,7 +123,9 @@ export class AuthController {
 
         const now = new Date();
         const newLastActive = now.toISOString();
-        const newExp = new Date(now.getTime() + SETTINGS.RT_TIME * 1000).toISOString();
+        const newExp = new Date(
+            now.getTime() + SETTINGS.RT_TIME * 1000,
+        ).toISOString();
 
         await this.deviceSessionsService.updateSession(
             payload.userId,
@@ -127,10 +134,10 @@ export class AuthController {
             newExp,
         );
 
-        res.cookie('refreshToken', newRefreshToken, {
+        res.cookie("refreshToken", newRefreshToken, {
             httpOnly: true,
             secure: true,
-            sameSite: 'strict',
+            sameSite: "strict",
             maxAge: SETTINGS.RT_TIME * 1000,
         });
 
@@ -150,40 +157,42 @@ export class AuthController {
             payload.deviceId,
         );
 
-        res.clearCookie('refreshToken', {
+        res.clearCookie("refreshToken", {
             httpOnly: true,
             secure: true,
-            sameSite: 'strict',
+            sameSite: "strict",
         });
 
         res.sendStatus(HttpStatus.NoContent);
     };
 
-    registration: RequestHandler<unknown, unknown, RegistrationAttributes> = async (
-        req,
-        res,
-    ) => {
-        try {
-            await this.authService.registerMail(req.body);
-            res.sendStatus(HttpStatus.NoContent);
-        } catch (error) {
-            if (error instanceof RepositoryBadRequestError) {
-                res.status(HttpStatus.BadRequest).json({
-                    errorsMessages: [
-                        { message: error.message, field: error.field ?? '' },
-                    ],
-                });
-                return;
+    registration: RequestHandler<unknown, unknown, RegistrationAttributes> =
+        async (req, res) => {
+            try {
+                await this.authService.registerMail(req.body);
+                res.sendStatus(HttpStatus.NoContent);
+            } catch (error) {
+                if (error instanceof RepositoryBadRequestError) {
+                    res.status(HttpStatus.BadRequest).json({
+                        errorsMessages: [
+                            {
+                                message: error.message,
+                                field: error.field ?? "",
+                            },
+                        ],
+                    });
+                    return;
+                }
+
+                res.sendStatus(HttpStatus.InternalServerError);
             }
+        };
 
-            res.sendStatus(HttpStatus.InternalServerError);
-        }
-    };
-
-    registrationConfirmation: RequestHandler<unknown, unknown, { code: string }> = async (
-        req,
-        res,
-    ) => {
+    registrationConfirmation: RequestHandler<
+        unknown,
+        unknown,
+        { code: string }
+    > = async (req, res) => {
         try {
             await this.authService.confirmByCode(req.body.code);
             res.sendStatus(HttpStatus.NoContent);
@@ -191,7 +200,7 @@ export class AuthController {
             if (error instanceof RepositoryBadRequestError) {
                 res.status(HttpStatus.BadRequest).json({
                     errorsMessages: [
-                        { message: error.message, field: error.field ?? '' },
+                        { message: error.message, field: error.field ?? "" },
                     ],
                 });
                 return;
@@ -201,44 +210,53 @@ export class AuthController {
         }
     };
 
-    registrationResend: RequestHandler<unknown, unknown, { email: string }> = async (
-        req,
-        res,
-    ) => {
-        try {
-            const userEmail = req.body.email.trim();
-            const user = await this.authRepository.findUserByLoginOrEmail(userEmail);
+    registrationResend: RequestHandler<unknown, unknown, { email: string }> =
+        async (req, res) => {
+            try {
+                const userEmail = req.body.email.trim();
+                const user =
+                    await this.authRepository.findUserByLoginOrEmail(userEmail);
 
-            if (!user) {
-                res.status(HttpStatus.BadRequest).json({
-                    errorsMessages: [{ message: 'User not found', field: 'email' }],
-                });
-                return;
+                if (!user) {
+                    res.status(HttpStatus.BadRequest).json({
+                        errorsMessages: [
+                            { message: "User not found", field: "email" },
+                        ],
+                    });
+                    return;
+                }
+
+                if (user.emailConfirmation?.isConfirmed) {
+                    res.status(HttpStatus.BadRequest).json({
+                        errorsMessages: [
+                            {
+                                message: "Email already confirmed",
+                                field: "email",
+                            },
+                        ],
+                    });
+                    return;
+                }
+
+                await this.authService.resendingMail(userEmail);
+
+                res.sendStatus(HttpStatus.NoContent);
+            } catch (error) {
+                if (error instanceof RepositoryBadRequestError) {
+                    res.status(HttpStatus.BadRequest).json({
+                        errorsMessages: [
+                            {
+                                message: error.message,
+                                field: error.field ?? "",
+                            },
+                        ],
+                    });
+                    return;
+                }
+
+                res.sendStatus(HttpStatus.InternalServerError);
             }
-
-            if (user.emailConfirmation?.isConfirmed) {
-                res.status(HttpStatus.BadRequest).json({
-                    errorsMessages: [{ message: 'Email already confirmed', field: 'email' }],
-                });
-                return;
-            }
-
-            await this.authService.resendingMail(userEmail);
-
-            res.sendStatus(HttpStatus.NoContent);
-        } catch (error) {
-            if (error instanceof RepositoryBadRequestError) {
-                res.status(HttpStatus.BadRequest).json({
-                    errorsMessages: [
-                        { message: error.message, field: error.field ?? '' },
-                    ],
-                });
-                return;
-            }
-
-            res.sendStatus(HttpStatus.InternalServerError);
-        }
-    };
+        };
 
     currentUser: RequestHandler = async (req, res) => {
         const currentUser = res.locals.currentUser!;
@@ -266,7 +284,10 @@ export class AuthController {
             if (error instanceof RepositoryBadRequestError) {
                 res.status(HttpStatus.BadRequest).json({
                     errorsMessages: [
-                        { message: error.message, field: error.field ?? 'recoveryCode' },
+                        {
+                            message: error.message,
+                            field: error.field ?? "recoveryCode",
+                        },
                     ],
                 });
                 return;

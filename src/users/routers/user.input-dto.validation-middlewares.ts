@@ -1,72 +1,71 @@
-import { body } from 'express-validator';
+import { body } from "express-validator";
 
-const loginValidation = body('login')
+const loginValidation = body("login")
     .exists()
-    .withMessage('login is required')
+    .withMessage("login is required")
     .bail()
 
     .isString()
-    .withMessage('login should be string')
+    .withMessage("login should be string")
     .bail()
 
     .trim()
 
     .notEmpty()
-    .withMessage('login must not be empty')
+    .withMessage("login must not be empty")
     .bail()
-    
+
     .isLength({ min: 3, max: 10 })
-    .withMessage('Length of login is not correct')
+    .withMessage("Length of login is not correct")
 
     .matches(/^[a-zA-Z0-9_-]*$/)
-    .withMessage('login may contain only letters, numbers, underscore (_) and hyphen (-)');
+    .withMessage(
+        "login may contain only letters, numbers, underscore (_) and hyphen (-)",
+    );
 
-
-const passwordValidation = body('password')
+const passwordValidation = body("password")
     .exists()
-    .withMessage('password is required')
+    .withMessage("password is required")
     .bail()
 
     .isString()
-    .withMessage('password should be string')
+    .withMessage("password should be string")
     .bail()
 
     .trim()
 
     .notEmpty()
-    .withMessage('password must not be empty')
+    .withMessage("password must not be empty")
     .bail()
-    
+
     .isLength({ min: 6, max: 20 })
-    .withMessage('Length of password is not correct');
+    .withMessage("Length of password is not correct");
 
-const emailUrlValidation = body('email')
+const emailUrlValidation = body("email")
     .exists()
-    .withMessage('email is required')
+    .withMessage("email is required")
     .bail()
 
     .isString()
-    .withMessage('email should be string')
+    .withMessage("email should be string")
     .bail()
 
     .trim()
 
     .notEmpty()
-    .withMessage('email must not be empty')
+    .withMessage("email must not be empty")
     .bail()
 
     .isEmail()
-    .withMessage('Invalid email format');
+    .withMessage("Invalid email format");
 
-    // .matches(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)
-    // .withMessage('Invalid email format');
+// .matches(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)
+// .withMessage('Invalid email format');
 
 export const userCreateInputValidation = [
-  loginValidation,
-  passwordValidation,
-  emailUrlValidation
+    loginValidation,
+    passwordValidation,
+    emailUrlValidation,
 ];
 
-export const emailInputValidation = [
-  emailUrlValidation
-];
+export const emailInputValidation = [emailUrlValidation];

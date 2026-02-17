@@ -1,13 +1,21 @@
-import express, { Express } from 'express';
-import { testingRouter } from './testing/routers/testing.router';
-import { blogRouter } from './blogs/routers/blogs.router';
-import { postRouter } from './posts/routers/posts.router';
-import { userRouter } from './users/routers/users.router';
-import { authRouter } from './auth/routers/auth.router';
-import { commentRouter } from './comments/routers/comments.router';
-import { deviceSessionsRouter } from './device_sessions/routers/device-sessions.router';
-import { TESTING_PATH, BLOGS_PATH, POSTS_PATH, USERS_PATH, AUTH_PATH, COMMENTS_PATH, DEVICE_SESSIONS_PATH} from './core/paths/paths';
-import cookieParser from 'cookie-parser';
+import express, { Express } from "express";
+import { testingRouter } from "./testing/routers/testing.router";
+import { blogRouter } from "./blogs/routers/blogs.router";
+import { postRouter } from "./posts/routers/posts.router";
+import { userRouter } from "./users/routers/users.router";
+import { authRouter } from "./auth/routers/auth.router";
+import { commentRouter } from "./comments/routers/comments.router";
+import { deviceSessionsRouter } from "./device_sessions/routers/device-sessions.router";
+import {
+    TESTING_PATH,
+    BLOGS_PATH,
+    POSTS_PATH,
+    USERS_PATH,
+    AUTH_PATH,
+    COMMENTS_PATH,
+    DEVICE_SESSIONS_PATH,
+} from "./core/paths/paths";
+import cookieParser from "cookie-parser";
 
 export const setupApp = async (app: Express) => {
     app.use(express.json()); // middleware для парсинга JSON в теле запроса

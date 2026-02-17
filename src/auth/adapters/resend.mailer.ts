@@ -1,6 +1,6 @@
-import { injectable } from 'inversify';
-import { Resend } from 'resend';
-import { SETTINGS } from '../../core/settings/settings';
+import { injectable } from "inversify";
+import { Resend } from "resend";
+import { SETTINGS } from "../../core/settings/settings";
 
 export type SendEmailParams = {
     to: string;
@@ -15,7 +15,7 @@ export class MailerService {
     private getClient(): Resend | null {
         if (!this.client) {
             if (!SETTINGS.RESEND_API_KEY) {
-                console.error('[mail] No RESEND_API_KEY provided!');
+                console.error("[mail] No RESEND_API_KEY provided!");
                 return null;
             }
             this.client = new Resend(SETTINGS.RESEND_API_KEY);

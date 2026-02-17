@@ -3,12 +3,14 @@ import { Post } from "../../domain/post";
 import { PostListPaginatedOutput } from "../output/post-list-paginated.output";
 import { ResourceType } from "../../../core/types/resource-type";
 
-export function mapToPostListPaginatedOutput (
+export function mapToPostListPaginatedOutput(
     posts: WithId<Post>[],
     meta: { pageNumber: number; pageSize: number; totalCount: number },
 ): PostListPaginatedOutput {
     return {
-        pagesCount: meta.pageSize ? Math.ceil(meta.totalCount / meta.pageSize) : 0,
+        pagesCount: meta.pageSize
+            ? Math.ceil(meta.totalCount / meta.pageSize)
+            : 0,
         page: meta.pageNumber,
         pageSize: meta.pageSize,
         totalCount: meta.totalCount,

@@ -1,6 +1,6 @@
-import { injectable } from 'inversify';
-import { deviceSessionsCollection } from '../../db/mongo.db';
-import { DeviceSession } from '../domain/device-session';
+import { injectable } from "inversify";
+import { deviceSessionsCollection } from "../../db/mongo.db";
+import { DeviceSession } from "../domain/device-session";
 
 @injectable()
 export class DeviceSessionsRepository {
@@ -33,7 +33,10 @@ export class DeviceSessionsRepository {
     }
 
     async deleteSession(userId: string, deviceId: string): Promise<boolean> {
-        const result = await deviceSessionsCollection.deleteOne({ userId, deviceId });
+        const result = await deviceSessionsCollection.deleteOne({
+            userId,
+            deviceId,
+        });
         return result.deletedCount === 1;
     }
 

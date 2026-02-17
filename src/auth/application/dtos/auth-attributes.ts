@@ -1,4 +1,4 @@
 export type AuthAttributes = {
-    loginOrEmail: string,
-    password: string,
-}
+    loginOrEmail: string;
+    password: string;
+};

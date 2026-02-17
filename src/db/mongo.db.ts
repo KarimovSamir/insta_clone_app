@@ -31,7 +31,7 @@ export let commentLikeDislikeStatusCollection: Collection<CommentLikeDislikeStat
 let clientPromise: Promise<MongoClient> | null = null;
 
 // Промис «готовности БД», чтобы маршруты могли дождаться инициализации.
-// Если другой кусок кода начнёт работать между моментом «подключение установлено» (clientPromise) 
+// Если другой кусок кода начнёт работать между моментом «подключение установлено» (clientPromise)
 // и моментом «переменная присвоена» (postCollection), он увидит postCollection === undefined и упадёт
 export let dbReady: Promise<void> | null = null;
 
@@ -51,25 +51,41 @@ export function runDB(url: string): Promise<void> {
                 blogCollection = db.collection<Blog>(BLOG_COLLECTION_NAME);
                 postCollection = db.collection<Post>(POST_COLLECTION_NAME);
                 userCollection = db.collection<User>(USER_COLLECTION_NAME);
-                commentCollection = db.collection<Comment>(COMMENT_COLLECTION_NAME);
-                blacklistRefTokenCollection = db.collection<BlacklistRefToken>(BLACKLIST_REF_TOKEN_COLLECTION_NAME);
-                deviceSessionsCollection = db.collection<DeviceSession>(DEVICE_SESSIONS);
-                rateLimitCollection = db.collection<RateLimitRecord>(RATE_LIMIT_COLLECTION_NAME);
-                commentLikeDislikeStatusCollection = db.collection<CommentLikeDislikeStatus>(COMMENT_LIKES_COLLECTION_NAME);
+                commentCollection = db.collection<Comment>(
+                    COMMENT_COLLECTION_NAME,
+                );
+                blacklistRefTokenCollection = db.collection<BlacklistRefToken>(
+                    BLACKLIST_REF_TOKEN_COLLECTION_NAME,
+                );
+                deviceSessionsCollection =
+                    db.collection<DeviceSession>(DEVICE_SESSIONS);
+                rateLimitCollection = db.collection<RateLimitRecord>(
+                    RATE_LIMIT_COLLECTION_NAME,
+                );
+                commentLikeDislikeStatusCollection =
+                    db.collection<CommentLikeDislikeStatus>(
+                        COMMENT_LIKES_COLLECTION_NAME,
+                    );
 
                 // TTL индексы
                 // уникальный индекс по deviceId
-                await deviceSessionsCollection.createIndex({ deviceId: 1 }, { unique: true });
+                await deviceSessionsCollection.createIndex(
+                    { deviceId: 1 },
+                    { unique: true },
+                );
                 // mongo примерно раз в 60 секунд делает чистку. МЫ не контролируем пробег самого mongo
                 // но мы контролируем, когда он удаляет через поле expireAfterSeconds (в секундах)
                 await blacklistRefTokenCollection.createIndex(
                     { exp: 1 },
-                    { expireAfterSeconds: 0 } // документ удалится ровно в момент exp, когда сам монго сделает свой пробег TTL
+                    { expireAfterSeconds: 0 }, // документ удалится ровно в момент exp, когда сам монго сделает свой пробег TTL
                 );
                 // Тут, при expireAfterSeconds: 60 мы добавляет к exp ещё 60 секунд
                 // То есть, грубо говоря, запись удалить на втором пробеге TTL (60 секунд + 60 секунд)
                 // Если коротко, то монго удаляет всё у кого протух exp каждые 60 секунд при пробеге TTL
-                await rateLimitCollection.createIndex({ date: 1 }, { expireAfterSeconds: 60 });
+                await rateLimitCollection.createIndex(
+                    { date: 1 },
+                    { expireAfterSeconds: 60 },
+                );
 
                 await db.command({ ping: 1 });
                 console.log("✅ Connected to the database");

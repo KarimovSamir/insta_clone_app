@@ -1,43 +1,37 @@
-import { body } from 'express-validator';
-import { enumCommentLikeDislikeStatus } from '../domain/comment';
+import { body } from "express-validator";
+import { enumCommentLikeDislikeStatus } from "../domain/comment";
 
-const contentValidation = body('content')
+const contentValidation = body("content")
     .exists()
-    .withMessage('Content is required')
+    .withMessage("Content is required")
     .bail()
 
     .isString()
-    .withMessage('Content should be string')
+    .withMessage("Content should be string")
     .bail()
 
     .trim()
 
     .notEmpty()
-    .withMessage('Content must not be empty')
+    .withMessage("Content must not be empty")
     .bail()
-    
-    .isLength({ min: 20, max: 300 })
-    .withMessage('Length of content is not correct');
 
-export const likeStatusValidation = body('likeStatus')
+    .isLength({ min: 20, max: 300 })
+    .withMessage("Length of content is not correct");
+
+export const likeStatusValidation = body("likeStatus")
     .isString()
-    .withMessage('Like status must be a string')
+    .withMessage("Like status must be a string")
     .trim()
     .isIn([
-        enumCommentLikeDislikeStatus.None, 
-        enumCommentLikeDislikeStatus.Like, 
-        enumCommentLikeDislikeStatus.Dislike
+        enumCommentLikeDislikeStatus.None,
+        enumCommentLikeDislikeStatus.Like,
+        enumCommentLikeDislikeStatus.Dislike,
     ])
-    .withMessage('Status must be None, Like or Dislike');
+    .withMessage("Status must be None, Like or Dislike");
 
-export const createPostCommentByIdInputDtoValidation = [
-    contentValidation,
-];
+export const createPostCommentByIdInputDtoValidation = [contentValidation];
 
-export const updateCommentByIdInputDtoValidation = [
-    contentValidation,
-];
+export const updateCommentByIdInputDtoValidation = [contentValidation];
 
-export const updateLikeStatusInputDtoValidation = [
-    likeStatusValidation
-];
+export const updateLikeStatusInputDtoValidation = [likeStatusValidation];

@@ -1,11 +1,11 @@
-import { inject, injectable } from 'inversify';
-import { WithId } from 'mongodb';
-import { TYPES } from '../../core/ioc/types';
-import { BcryptService } from '../../auth/adapters/bcrypt.service';
-import { User } from '../domain/user';
-import { UserRepository } from '../repositories/user.repository';
-import { UserQueryInput } from '../routers/input/user-query.input';
-import { UserAttributes } from './dtos/user-attributes';
+import { inject, injectable } from "inversify";
+import { WithId } from "mongodb";
+import { TYPES } from "../../core/ioc/types";
+import { BcryptService } from "../../auth/adapters/bcrypt.service";
+import { User } from "../domain/user";
+import { UserRepository } from "../repositories/user.repository";
+import { UserQueryInput } from "../routers/input/user-query.input";
+import { UserAttributes } from "./dtos/user-attributes";
 
 @injectable()
 export class UsersService {
@@ -18,7 +18,7 @@ export class UsersService {
 
     async findUsers(
         queryDto: UserQueryInput,
-    ): Promise<{items: WithId<User>[]; totalCount: number}> {
+    ): Promise<{ items: WithId<User>[]; totalCount: number }> {
         return this.userRepository.findUsers(queryDto);
     }
 
@@ -27,7 +27,9 @@ export class UsersService {
     }
 
     async createUser(dto: UserAttributes): Promise<string> {
-        const passwordHash = await this.bcryptService.generateHash(dto.password);
+        const passwordHash = await this.bcryptService.generateHash(
+            dto.password,
+        );
 
         const newUser: User = {
             login: dto.login,

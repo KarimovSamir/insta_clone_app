@@ -1,24 +1,24 @@
-import { Router } from 'express';
-import { inputValidationResultMiddleware } from '../../core/middlewares/validation/input-validtion-result.middleware';
+import { Router } from "express";
+import { inputValidationResultMiddleware } from "../../core/middlewares/validation/input-validtion-result.middleware";
 import {
-  authInputValidation,
-  authRegistrationValidation,
-  emailConfirmationValidation,
-  newEmailPasswordInputValidation,
-} from './auth.input-dto.validation-middlewares';
-import { bearerAuthGuard } from '../middlewares/bearer-auth.guard-middleware';
-import { refreshTokenGuard } from '../middlewares/refresh-token.guard-middleware';
-import { rateLimitAuthMiddleware } from '../middlewares/rate-limit-auth.middleware';
-import { appContainer } from '../../core/ioc/app.container';
-import { TYPES } from '../../core/ioc/types';
-import { AuthController } from '../controllers/auth.controller';
+    authInputValidation,
+    authRegistrationValidation,
+    emailConfirmationValidation,
+    newEmailPasswordInputValidation,
+} from "./auth.input-dto.validation-middlewares";
+import { bearerAuthGuard } from "../middlewares/bearer-auth.guard-middleware";
+import { refreshTokenGuard } from "../middlewares/refresh-token.guard-middleware";
+import { rateLimitAuthMiddleware } from "../middlewares/rate-limit-auth.middleware";
+import { appContainer } from "../../core/ioc/app.container";
+import { TYPES } from "../../core/ioc/types";
+import { AuthController } from "../controllers/auth.controller";
 
 export const authRouter = Router({});
 
 const authController = appContainer.get<AuthController>(TYPES.AuthController);
 
 authRouter.post(
-    '/login',
+    "/login",
     rateLimitAuthMiddleware,
     authInputValidation,
     inputValidationResultMiddleware,
@@ -26,19 +26,15 @@ authRouter.post(
 );
 
 authRouter.post(
-    '/refresh-token',
+    "/refresh-token",
     refreshTokenGuard,
     authController.refreshToken,
 );
 
-authRouter.post(
-    '/logout',
-    refreshTokenGuard,
-    authController.logout,
-);
+authRouter.post("/logout", refreshTokenGuard, authController.logout);
 
 authRouter.post(
-    '/registration',
+    "/registration",
     rateLimitAuthMiddleware,
     authRegistrationValidation,
     inputValidationResultMiddleware,
@@ -46,27 +42,23 @@ authRouter.post(
 );
 
 authRouter.post(
-    '/registration-confirmation',
+    "/registration-confirmation",
     rateLimitAuthMiddleware,
     authController.registrationConfirmation,
 );
 
 authRouter.post(
-    '/registration-email-resending',
+    "/registration-email-resending",
     rateLimitAuthMiddleware,
     emailConfirmationValidation,
     inputValidationResultMiddleware,
     authController.registrationResend,
 );
 
-authRouter.get(
-    '/me',
-    bearerAuthGuard,
-    authController.currentUser,
-);
+authRouter.get("/me", bearerAuthGuard, authController.currentUser);
 
 authRouter.post(
-    '/new-password',
+    "/new-password",
     rateLimitAuthMiddleware,
     newEmailPasswordInputValidation,
     inputValidationResultMiddleware,
@@ -74,7 +66,7 @@ authRouter.post(
 );
 
 authRouter.post(
-    '/password-recovery',
+    "/password-recovery",
     rateLimitAuthMiddleware,
     emailConfirmationValidation,
     inputValidationResultMiddleware,

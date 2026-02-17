@@ -7,7 +7,9 @@ export function mapToUserListPaginatedOutput(
     meta: { pageNumber: number; pageSize: number; totalCount: number },
 ): UserListPaginatedOutput {
     return {
-        pagesCount: meta.pageSize ? Math.ceil(meta.totalCount / meta.pageSize) : 0,
+        pagesCount: meta.pageSize
+            ? Math.ceil(meta.totalCount / meta.pageSize)
+            : 0,
         page: meta.pageNumber,
         pageSize: meta.pageSize,
         totalCount: meta.totalCount,

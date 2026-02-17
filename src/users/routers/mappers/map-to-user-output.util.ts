@@ -8,5 +8,5 @@ export function mapToUserOutput(user: WithId<User>): UserOutput {
         login: user.login,
         email: user.email,
         createdAt: user.createdAt,
-    }
+    };
 }

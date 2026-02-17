@@ -1,4 +1,4 @@
 export type NewEmailPasswordRecoveryAttributes = {
-    newPassword: string, 
-    recoveryCode: string
-}
+    newPassword: string;
+    recoveryCode: string;
+};

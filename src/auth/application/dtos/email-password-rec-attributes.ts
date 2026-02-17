@@ -1,3 +1,3 @@
 export type EmailPasswordRecoveryAttributes = {
-    email: string,
-}
+    email: string;
+};

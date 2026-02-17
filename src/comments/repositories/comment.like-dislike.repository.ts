@@ -1,13 +1,19 @@
-import { injectable } from 'inversify';
-import { commentLikeDislikeStatusCollection } from '../../db/mongo.db';
-import { CommentLikeDislikeStatus, enumCommentLikeDislikeStatus } from '../domain/comment';
+import { injectable } from "inversify";
+import { commentLikeDislikeStatusCollection } from "../../db/mongo.db";
+import {
+    CommentLikeDislikeStatus,
+    enumCommentLikeDislikeStatus,
+} from "../domain/comment";
 
 @injectable()
 export class CommentLikeDislikeRepository {
-    async findByUserIdAndCommentId(userId: string, commentId: string): Promise<CommentLikeDislikeStatus | null> {
+    async findByUserIdAndCommentId(
+        userId: string,
+        commentId: string,
+    ): Promise<CommentLikeDislikeStatus | null> {
         const res = await commentLikeDislikeStatusCollection.findOne({
             userId: userId,
-            commentId: commentId
+            commentId: commentId,
         });
         return res;
     }
@@ -15,20 +21,20 @@ export class CommentLikeDislikeRepository {
     async saveStatusCommentLikeDislike(
         userId: string,
         commentId: string,
-        status: enumCommentLikeDislikeStatus
+        status: enumCommentLikeDislikeStatus,
     ): Promise<void> {
         await commentLikeDislikeStatusCollection.updateOne(
             {
                 userId: userId,
-                commentId: commentId
+                commentId: commentId,
             },
             {
                 $set: {
                     status: status,
-                    createdAt: new Date().toISOString()
-                }
+                    createdAt: new Date().toISOString(),
+                },
             },
-            { upsert: true }
+            { upsert: true },
             // Команда upsert
             // 1. Ищет запись по userId и commentId.
             // 2. Если нашел -> меняет status.
