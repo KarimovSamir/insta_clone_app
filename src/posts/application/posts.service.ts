@@ -57,11 +57,11 @@ export class PostsService {
             }));
         }));
 
-        return { 
-            items, 
-            totalCount, 
-            myStatusesDictionary, 
-            newestLikesDictionary 
+        return {
+            items,
+            totalCount,
+            myStatusesDictionary,
+            newestLikesDictionary
         };
     }
 
@@ -146,6 +146,26 @@ export class PostsService {
 
     async updatePostById(id: string, dto: PostAttributes): Promise<void> {
         await this.postsRepository.updatePostById(id, dto);
+    }
+
+    async updateLikeStatus(
+        userId: string,
+        userLogin: string, // <--- Обязательно передаем логин!
+        postId: string,
+        status: enumPostLikeStatus
+    ): Promise<void> {
+        // 1. Проверяем, существует ли пост
+        const post = await this.postsRepository.findPostByIdOrFail(postId);
+
+        // 2. Сохраняем лайк (с логином!)
+        await this.postLikeRepository.saveStatusPostLike(userId, postId, userLogin, status);
+
+        // 3. Считаем новые цифры (сколько теперь лайков и дизлайков)
+        const likesCount = await this.postLikeRepository.countLikes(postId);
+        const dislikesCount = await this.postLikeRepository.countDislikes(postId);
+
+        // 4. Обновляем пост (записываем новые цифры внутрь поста)
+        await this.postsRepository.updatePostLikesInfo(postId, likesCount, dislikesCount);
     }
 
     async deletePostById(id: string): Promise<void> {

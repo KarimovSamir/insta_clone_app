@@ -6,7 +6,7 @@ import { inputValidationResultMiddleware } from "../../core/middlewares/validati
 import { bearerAuthGuard } from "../../auth/middlewares/bearer-auth.guard-middleware";
 import {
     updateCommentByIdInputDtoValidation,
-    updateLikeStatusInputDtoValidation,
+    updateCommentLikeStatusInputDtoValidation,
 } from "./comment.input-dto.validation-middlewares";
 import { CommentsController } from "../controllers/comments.controller";
 import { softBearerAuthGuard } from "../../auth/middlewares/soft-bearer-auth.guard-middleware";
@@ -39,9 +39,9 @@ commentRouter
         "/:id/like-status",
         bearerAuthGuard,
         idValidation,
-        updateLikeStatusInputDtoValidation,
+        updateCommentLikeStatusInputDtoValidation,
         inputValidationResultMiddleware,
-        commentsController.updateLikeStatusById,
+        commentsController.updateCommentLikeStatusById,
     )
 
     .delete(

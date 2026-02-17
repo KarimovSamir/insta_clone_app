@@ -90,4 +90,16 @@ export class PostRepository {
             throw new RepositoryNotFoundError("Post not exist");
         }
     }
+
+    async updatePostLikesInfo(postId: string, likesCount: number, dislikesCount: number): Promise<void> {
+        await postCollection.updateOne(
+            { _id: new ObjectId(postId) },
+            {
+                $set: {
+                    "likesInfo.likesCount": likesCount,
+                    "likesInfo.dislikesCount": dislikesCount
+                }
+            }
+        );
+    }
 }

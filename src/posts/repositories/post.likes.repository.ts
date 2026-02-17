@@ -56,4 +56,14 @@ export class PostLikeRepository {
             // 3. Если НЕ нашел -> создает новую запись с этим status.
         );
     }
+
+    // Считаем лайки
+    async countLikes(postId: string): Promise<number> {
+        return postLikeStatusCollection.countDocuments({ postId, status: enumPostLikeStatus.Like });
+    }
+
+    // Считаем дизлайки
+    async countDislikes(postId: string): Promise<number> {
+        return postLikeStatusCollection.countDocuments({ postId, status: enumPostLikeStatus.Dislike });
+    }
 }

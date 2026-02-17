@@ -34,4 +34,4 @@ export const createPostCommentByIdInputDtoValidation = [contentValidation];
 
 export const updateCommentByIdInputDtoValidation = [contentValidation];
 
-export const updateLikeStatusInputDtoValidation = [likeStatusValidation];
+export const updateCommentLikeStatusInputDtoValidation = [likeStatusValidation];

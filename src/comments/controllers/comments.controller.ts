@@ -50,7 +50,7 @@ export class CommentsController {
         }
     };
 
-    updateLikeStatusById: RequestHandler<
+    updateCommentLikeStatusById: RequestHandler<
         CommentRequestParams,
         unknown,
         CommentLikeStatusUpdateInput
@@ -60,7 +60,7 @@ export class CommentsController {
                 | CurrentUser
                 | undefined;
 
-            await this.commentsService.updateLikeStatus(
+            await this.commentsService.updateCommentLikeStatus(
                 req.params.id,
                 req.body,
                 currentUser!,

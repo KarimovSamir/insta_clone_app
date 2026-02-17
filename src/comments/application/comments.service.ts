@@ -131,7 +131,7 @@ export class CommentsService {
         await this.commentsRepository.updateCommentById(id, dto);
     }
 
-    async updateLikeStatus(
+    async updateCommentLikeStatus(
         id: string,
         dto: CommentLikeDislikeStatusAttributes,
         user: CurrentUser,
