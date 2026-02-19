@@ -14,6 +14,7 @@ import { PostSortField } from "../../posts/routers/input/post-sort-field";
 import { postCreateByBlogInputDtoValidation } from "../../posts/routers/post.input-dto.validation-middlewares";
 import { superAdminGuardMiddleware } from "../../auth/middlewares/super-admin.guard-middleware";
 import { BlogController } from "../controllers/blog.controller";
+import { softBearerAuthGuard } from "../../auth/middlewares/soft-bearer-auth.guard-middleware";
 
 const blogController = appContainer.get<BlogController>(TYPES.BlogController);
 
@@ -35,12 +36,30 @@ blogRouter
         blogController.getBlogById,
     )
 
+    .get(
+        "/:id/posts",
+        softBearerAuthGuard,
+        idValidation,
+        paginationAndSortingValidation(PostSortField),
+        inputValidationResultMiddleware,
+        blogController.getBlogPostList,
+    )
+
     .post(
         "",
         superAdminGuardMiddleware,
         blogCreateInputValidation,
         inputValidationResultMiddleware,
         blogController.createBlog,
+    )
+    
+    .post(
+        "/:id/posts",
+        superAdminGuardMiddleware,
+        idValidation,
+        postCreateByBlogInputDtoValidation,
+        inputValidationResultMiddleware,
+        blogController.createBlogPost,
     )
 
     .put(
@@ -58,21 +77,4 @@ blogRouter
         idValidation,
         inputValidationResultMiddleware,
         blogController.deleteBlogById,
-    )
-
-    .post(
-        "/:id/posts",
-        superAdminGuardMiddleware,
-        idValidation,
-        postCreateByBlogInputDtoValidation,
-        inputValidationResultMiddleware,
-        blogController.createBlogPost,
-    )
-
-    .get(
-        "/:id/posts",
-        idValidation,
-        paginationAndSortingValidation(PostSortField),
-        inputValidationResultMiddleware,
-        blogController.getBlogPostList,
     );
