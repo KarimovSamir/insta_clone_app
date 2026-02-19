@@ -126,23 +126,28 @@ export class BlogController {
 
     getBlogPostList: RequestHandler<{ id: string }> = async (req, res) => {
         try {
+            const currentUser = res.locals.currentUser;
+            const userId = currentUser ? currentUser._id.toString() : undefined;
+
             const sanitizedQuery = matchedData(req, {
                 locations: ["query"],
                 includeOptionals: true,
             }) as PostQueryInput;
 
-            const queryInput =
-                setDefaultSortAndPaginationIfNotExist(sanitizedQuery);
-            const { items, totalCount } =
+            const queryInput = setDefaultSortAndPaginationIfNotExist(sanitizedQuery);
+            const { items, totalCount, myStatusesDictionary, newestLikesDictionary } =
                 await this.postsService.findPostsByBlog(
                     queryInput,
                     req.params.id,
+                    userId
                 );
 
             const postListOutput = mapToPostListPaginatedOutput(items, {
                 pageNumber: queryInput.pageNumber,
                 pageSize: queryInput.pageSize,
                 totalCount,
+                myStatusesDictionary: myStatusesDictionary,
+                newestLikesDictionary: newestLikesDictionary,
             });
 
             res.send(postListOutput);

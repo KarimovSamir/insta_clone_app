@@ -68,10 +68,46 @@ export class PostsService {
     async findPostsByBlog(
         queryDto: PostQueryInput,
         blogId: string,
-    ): Promise<{ items: WithId<Post>[]; totalCount: number }> {
+        userId?: string
+    ): Promise<{
+        items: WithId<Post>[];
+        totalCount: number;
+        myStatusesDictionary: Record<string, enumPostLikeStatus>;
+        newestLikesDictionary: Record<string, NewestLikes[]>;
+    }> {
         await this.blogsRepository.findBlogByIdOrFail(blogId);
 
-        return this.postsRepository.findPostsByBlog(queryDto, blogId);
+        // Получаем посты
+        const { items, totalCount } = await this.postsRepository.findPostsByBlog(queryDto, blogId);
+        const myStatusesDictionary: Record<string, enumPostLikeStatus> = {};
+        const newestLikesDictionary: Record<string, NewestLikes[]> = {};
+
+        if (userId) {
+            const postIds = items.map((p) => p._id.toString());
+            const statuses = await this.postLikeRepository.findStatusesForPosts(userId, postIds);
+
+            statuses.forEach((status) => {
+                myStatusesDictionary[status.postId] = status.status;
+            });
+        }
+
+        await Promise.all(items.map(async (post) => {
+            const postId = post._id.toString();
+            const rawLikes = await this.postLikeRepository.findNewestLikes(postId);
+
+            newestLikesDictionary[postId] = rawLikes.map(like => ({
+                addedAt: like.addedAt,
+                userId: like.userId,
+                login: like.userLogin
+            }));
+        }));
+
+        return {
+            items,
+            totalCount,
+            myStatusesDictionary,
+            newestLikesDictionary
+        };
     }
 
     async findPostByIdOrFail(id: string): Promise<WithId<Post>> {
@@ -150,21 +186,16 @@ export class PostsService {
 
     async updateLikeStatus(
         userId: string,
-        userLogin: string, // <--- Обязательно передаем логин!
+        userLogin: string,
         postId: string,
         status: enumPostLikeStatus
     ): Promise<void> {
-        // 1. Проверяем, существует ли пост
-        const post = await this.postsRepository.findPostByIdOrFail(postId);
-
-        // 2. Сохраняем лайк (с логином!)
+        await this.postsRepository.findPostByIdOrFail(postId);
         await this.postLikeRepository.saveStatusPostLike(userId, postId, userLogin, status);
 
-        // 3. Считаем новые цифры (сколько теперь лайков и дизлайков)
         const likesCount = await this.postLikeRepository.countLikes(postId);
         const dislikesCount = await this.postLikeRepository.countDislikes(postId);
 
-        // 4. Обновляем пост (записываем новые цифры внутрь поста)
         await this.postsRepository.updatePostLikesInfo(postId, likesCount, dislikesCount);
     }
 
