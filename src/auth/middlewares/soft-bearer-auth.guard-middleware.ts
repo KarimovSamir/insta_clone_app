@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from "express";
-import { HttpStatus } from "../../core/types/http-statuses";
 import { appContainer } from "../../core/ioc/app.container";
 import { TYPES } from "../../core/ioc/types";
 import { JwtService } from "../adapters/jwt.service";
@@ -7,13 +6,14 @@ import { UserRepository } from "../../users/repositories/user.repository";
 
 // В src\posts\controllers\posts.controller.ts есть метод getPostComments
 // Там есть код const currentUser = res.locals.currentUser;
+
 // Там нужен юзер чтобы получить статус комментария
 // Но нам нужна тогда авторизация
-// Если заходит авторизованный пользователь (есть токен), сервер должен это понять, чтобы показать его лайк
-// Если заходит гость (без токена), сервер пускает его, но показывает None
 
-// const jwtService = appContainer.get<JwtService>(TYPES.JwtService);
-// const userRepository = appContainer.get<UserRepository>(TYPES.UserRepository);
+// Если заходит авторизованный пользователь (есть токен), сервер должен это понять, чтобы показать его лайк. 
+// Express надо показат ьчто есть токен, иначе при res.locals.currentUser внутри будет пустота без токена
+
+// Если заходит гость (без токена), сервер пускает его, но показывает None
 
 export const softBearerAuthGuard = async (
     req: Request,
