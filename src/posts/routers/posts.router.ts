@@ -13,6 +13,7 @@ import { PostSortField } from "./input/post-sort-field";
 import {
     postCreateInputDtoValidation,
     postUpdateInputDtoValidation,
+    likePostStatusValidation
 } from "./post.input-dto.validation-middlewares";
 import { softBearerAuthGuard } from "../../auth/middlewares/soft-bearer-auth.guard-middleware";
 
@@ -25,6 +26,7 @@ const postsController = appContainer.get<PostsController>(
 postRouter
     .get(
         "",
+        softBearerAuthGuard, // <--- 1. ДОБАВИЛИ СЮДА, чтобы список постов "узнавал" юзера
         paginationAndSortingValidation(PostSortField),
         inputValidationResultMiddleware,
         postsController.getPostList,
@@ -55,7 +57,16 @@ postRouter
         inputValidationResultMiddleware,
         postsController.updatePostById,
     )
-    
+
+    .put(
+        "/:id/like-status",
+        bearerAuthGuard,
+        idValidation,
+        likePostStatusValidation,
+        inputValidationResultMiddleware,
+        postsController.updatePostLikeStatus,
+    )
+
     .delete(
         "/:id",
         superAdminGuardMiddleware,
@@ -63,7 +74,7 @@ postRouter
         inputValidationResultMiddleware,
         postsController.deletePostById,
     )
-    
+
     .post(
         "",
         superAdminGuardMiddleware,

@@ -19,7 +19,7 @@ const contentValidation = body("content")
     .isLength({ min: 20, max: 300 })
     .withMessage("Length of content is not correct");
 
-export const likeStatusValidation = body("likeStatus")
+const likeStatusValidation = body("likeStatus")
     .isString()
     .withMessage("Like status must be a string")
     .trim()
@@ -31,7 +31,5 @@ export const likeStatusValidation = body("likeStatus")
     .withMessage("Status must be None, Like or Dislike");
 
 export const createPostCommentByIdInputDtoValidation = [contentValidation];
-
 export const updateCommentByIdInputDtoValidation = [contentValidation];
-
 export const updateCommentLikeStatusInputDtoValidation = [likeStatusValidation];

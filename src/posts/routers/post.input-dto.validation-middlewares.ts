@@ -1,4 +1,5 @@
 import { body } from "express-validator";
+import { enumPostLikeStatus } from "../domain/post.likes";
 
 const titleValidation = body("title")
     .exists()
@@ -69,6 +70,17 @@ const blogId = body("blogId")
     .withMessage("blogId must not be empty")
     .bail();
 
+export const likePostStatusValidation = body("likeStatus")
+    .isString()
+    .withMessage("Like status must be a string")
+    .trim()
+    .isIn([
+        enumPostLikeStatus.None,
+        enumPostLikeStatus.Like,
+        enumPostLikeStatus.Dislike,
+    ])
+    .withMessage("Status must be None, Like or Dislike");
+
 export const postCreateInputDtoValidation = [
     titleValidation,
     shortDescriptionValidation,
@@ -88,3 +100,5 @@ export const postUpdateInputDtoValidation = [
     contentValidation,
     blogId,
 ];
+
+export const updatePostLikeStatusInputDtoValidation = [likePostStatusValidation];

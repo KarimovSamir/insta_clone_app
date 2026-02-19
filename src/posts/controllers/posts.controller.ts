@@ -18,6 +18,7 @@ import { mapToCommentOutputUtil } from "../../comments/routers/mappers/map-to-co
 import { CommentQueryInput } from "../../comments/routers/input/comment-query.input";
 import { CommentCreateByIdInput } from "../../comments/routers/input/comment-create.input";
 import { Comment, enumCommentLikeDislikeStatus } from "../../comments/domain/comment";
+import { PostLikeUpdateInput } from "../routers/input/post-like-status-update.input";
 
 type PostRequestParams = { id: string };
 
@@ -39,6 +40,9 @@ export class PostsController {
 
     getPostList: RequestHandler = async (req, res) => {
         try {
+            const currentUser = res.locals.currentUser;
+            const userId = currentUser ? currentUser._id.toString() : undefined;
+
             const sanitizedQuery = matchedData(req, {
                 locations: ["query"],
                 includeOptionals: true,
@@ -46,13 +50,15 @@ export class PostsController {
             const queryInput =
                 setDefaultSortAndPaginationIfNotExist(sanitizedQuery);
 
-            const { items, totalCount } =
-                await this.postsService.findPosts(queryInput);
+            const { items, totalCount, myStatusesDictionary, newestLikesDictionary } =
+                await this.postsService.findPosts(queryInput, userId);
 
             const postListOutput = mapToPostListPaginatedOutput(items, {
                 pageNumber: queryInput.pageNumber,
                 pageSize: queryInput.pageSize,
                 totalCount,
+                myStatusesDictionary: myStatusesDictionary,
+                newestLikesDictionary: newestLikesDictionary,
             });
 
             res.send(postListOutput);
@@ -63,89 +69,17 @@ export class PostsController {
 
     getPostById: RequestHandler<PostRequestParams> = async (req, res) => {
         try {
-            const post = await this.postsService.findPostByIdOrFail(
-                req.params.id,
-            );
-            const postOutput = mapToPostOutputUtil(post);
+            const currentUser = res.locals.currentUser;
+            const userId = currentUser ? currentUser._id.toString() : undefined;
 
+            const {post, myStatus, newestLikes} = await this.postsService.getPostResultById(
+                req.params.id,
+                userId
+            )
+            const postOutput = mapToPostOutputUtil( post, myStatus, newestLikes);
             res.send(postOutput);
         } catch (error) {
             res.sendStatus(HttpStatus.NotFound);
-        }
-    };
-
-    createPost: RequestHandler<unknown, unknown, PostCreateInput> = async (
-        req,
-        res,
-    ) => {
-        try {
-            const createdPostId = await this.postsService.createPost(req.body);
-            const createdPost =
-                await this.postsService.findPostByIdOrFail(createdPostId);
-            const postOutput = mapToPostOutputUtil(createdPost);
-
-            res.status(HttpStatus.Created).send(postOutput);
-        } catch (error) {
-            if (error instanceof RepositoryNotFoundError) {
-                res.sendStatus(HttpStatus.NotFound);
-                return;
-            }
-
-            res.sendStatus(HttpStatus.InternalServerError);
-        }
-    };
-
-    updatePostById: RequestHandler<
-        PostRequestParams,
-        unknown,
-        PostUpdateInput
-    > = async (req, res) => {
-        try {
-            await this.postsService.updatePostById(req.params.id, req.body);
-            res.sendStatus(HttpStatus.NoContent);
-        } catch (error) {
-            res.sendStatus(HttpStatus.NotFound);
-        }
-    };
-
-    deletePostById: RequestHandler<PostRequestParams> = async (req, res) => {
-        try {
-            await this.postsService.deletePostById(req.params.id);
-            res.sendStatus(HttpStatus.NoContent);
-        } catch (error) {
-            res.sendStatus(HttpStatus.NotFound);
-        }
-    };
-
-    createPostComment: RequestHandler<
-        PostRequestParams,
-        unknown,
-        CommentCreateByIdInput
-    > = async (req, res) => {
-        try {
-            const currentUser = res.locals.currentUser as
-                | CurrentUser
-                | undefined;
-            const createdCommentId =
-                await this.commentsService.createCommentWithUrlPostId(
-                    req.params.id,
-                    req.body,
-                    currentUser!,
-                );
-            const createdComment =
-                await this.commentsService.findCommentByIdOrFail(
-                    createdCommentId,
-                );
-            const commentOutput = mapToCommentOutputUtil(createdComment, enumCommentLikeDislikeStatus.None);
-
-            res.status(HttpStatus.Created).send(commentOutput);
-        } catch (error) {
-            if (error instanceof RepositoryNotFoundError) {
-                res.sendStatus(HttpStatus.NotFound);
-                return;
-            }
-
-            res.sendStatus(HttpStatus.InternalServerError);
         }
     };
 
@@ -184,6 +118,99 @@ export class PostsController {
             );
 
             res.send(commentListOutput);
+        } catch (error) {
+            if (error instanceof RepositoryNotFoundError) {
+                res.sendStatus(HttpStatus.NotFound);
+                return;
+            }
+
+            res.sendStatus(HttpStatus.InternalServerError);
+        }
+    };
+
+    createPost: RequestHandler<unknown, unknown, PostCreateInput> = async (
+        req,
+        res,
+    ) => {
+        try {
+            const createdPostId = await this.postsService.createPost(req.body);
+            const createdPost =
+                await this.postsService.findPostByIdOrFail(createdPostId);
+            const postOutput = mapToPostOutputUtil(createdPost);
+
+            res.status(HttpStatus.Created).send(postOutput);
+        } catch (error) {
+            if (error instanceof RepositoryNotFoundError) {
+                res.sendStatus(HttpStatus.NotFound);
+                return;
+            }
+
+            res.sendStatus(HttpStatus.InternalServerError);
+        }
+    };
+
+    updatePostById: RequestHandler<
+        PostRequestParams,
+        unknown,
+        PostUpdateInput
+    > = async (req, res) => {
+        try {
+            await this.postsService.updatePostById(req.params.id, req.body);
+            res.sendStatus(HttpStatus.NoContent);
+        } catch (error) {
+            res.sendStatus(HttpStatus.NotFound);
+        }
+    };
+    
+    updatePostLikeStatus: RequestHandler<
+        PostRequestParams,
+        unknown,
+        PostLikeUpdateInput
+    > = async (req, res) => {
+        try {
+            // Гарантируем что тут не пустота, а точно лежит юзер
+            const currentUser = res.locals.currentUser as CurrentUser;
+            const userId = currentUser._id.toString();
+            const userLogin = currentUser.login;
+
+            await this.postsService.updateLikeStatus(userId, userLogin, req.params.id, req.body.likeStatus)
+            res.sendStatus(HttpStatus.NoContent);
+        } catch (error) {
+            res.sendStatus(HttpStatus.NotFound);
+        }
+    };
+    
+    deletePostById: RequestHandler<PostRequestParams> = async (req, res) => {
+        try {
+            await this.postsService.deletePostById(req.params.id);
+            res.sendStatus(HttpStatus.NoContent);
+        } catch (error) {
+            res.sendStatus(HttpStatus.NotFound);
+        }
+    };
+
+    createPostComment: RequestHandler<
+        PostRequestParams,
+        unknown,
+        CommentCreateByIdInput
+    > = async (req, res) => {
+        try {
+            const currentUser = res.locals.currentUser as
+                | CurrentUser
+                | undefined;
+            const createdCommentId =
+                await this.commentsService.createCommentWithUrlPostId(
+                    req.params.id,
+                    req.body,
+                    currentUser!,
+                );
+            const createdComment =
+                await this.commentsService.findCommentByIdOrFail(
+                    createdCommentId,
+                );
+            const commentOutput = mapToCommentOutputUtil(createdComment, enumCommentLikeDislikeStatus.None);
+
+            res.status(HttpStatus.Created).send(commentOutput);
         } catch (error) {
             if (error instanceof RepositoryNotFoundError) {
                 res.sendStatus(HttpStatus.NotFound);

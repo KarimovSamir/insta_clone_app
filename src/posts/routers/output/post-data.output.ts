@@ -1,3 +1,5 @@
+import { ExtendedLikesInfo } from "../../domain/post.likes";
+
 export type PostDataOutput = {
     id: string;
     title: string;
@@ -6,4 +8,5 @@ export type PostDataOutput = {
     blogId: string;
     blogName: string;
     createdAt: string;
+    extendedLikesInfo: ExtendedLikesInfo; 
 };
